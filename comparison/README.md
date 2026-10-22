@@ -1,6 +1,6 @@
 # **Vergleich**
 
-Messung von A-002 und A-004 in PostgreSQL und Neo4j mit erzeugten Datensätzen (K1 bis K3).
+Messung von A-001 und A-003 in PostgreSQL und Neo4j mit erzeugten Datensätzen (K1 bis K3).
 
 | Datei | Inhalt |
 |---|---|

@@ -1,16 +1,16 @@
 # **DDI – Mini-Challenge 3**
 
-Lernpfadplanung mit PostgreSQL (LE2) und Neo4j (LE3) im Vergleich. Der Bericht ist [docs/mc3-report.md](docs/mc3-report.md).
+Lernpfadplanung mit PostgreSQL (LE2) und Neo4j (LE3) im Vergleich. Der Bericht ist `docs/MC3_Bericht_Pulver_Urech.docx`.
 
 | Ordner oder Datei | Inhalt |
 |---|---|
-| `le2-sql/` | `schema.sql`, `seed.sql`, `queries.sql`, `tests.sql` und Modelle |
-| `le3-nosql/` | `schema.cypher`, `import.cypher`, `queries.cypher` und Graphmodell |
+| `le2-sql/` | PostgreSQL, siehe `le2-sql/README.md` |
+| `le3-nosql/` | Neo4j, siehe `le3-nosql/README.md` |
 | `src/` | Export, Import, Abfragen beider Datenbanken, Messung, K4 |
 | `tests/` | `pytest`: Generator, Dateiimport, K1 Korrektheit |
-| `comparison/` | Notebook zur Auswertung, Resultate in `results/` |
+| `comparison/` | Messung und Auswertung, siehe `comparison/README.md` |
 | `data/seed.json` | Export des Beispielbestands `synthetic-v2` |
-| `docs/` | Bericht, Auftrag, Review-Meetings |
+| `docs/` | Bericht als Word-Dokument, Review-Meetings |
 
 ## **Starten**
 

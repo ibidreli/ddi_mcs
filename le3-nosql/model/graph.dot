@@ -1,0 +1,28 @@
+// graph.dot
+// Property-Graph-Modell der Neo4j-Umsetzung: Knoten mit Label und Eigenschaften,
+// gerichtete Kanten mit Typ. id ist bei jedem Label eindeutig (schema.cypher).
+// COMPLETED ist eine abgeleitete Abkuerzung fuer abgeschlossene Belegungen.
+// Rendern: dot -Tpng graph.dot -o graph.png
+digraph graph_model {
+  graph [rankdir=LR, pad=0.3, nodesep=0.6, ranksep=1.3, bgcolor="white"];
+  node  [shape=ellipse, style=filled, fontname="Helvetica", fontsize=11, penwidth=1.2];
+  edge  [fontname="Helvetica", fontsize=10, penwidth=1.2, color="#333333"];
+
+  learner  [label=<<B>:Learner</B><BR/><FONT POINT-SIZE="9">id, name, study_mode</FONT>>, fillcolor="#f6c85f"];
+  run      [label=<<B>:Run</B><BR/><FONT POINT-SIZE="9">id, study_mode</FONT>>, fillcolor="#8cc63f"];
+  course   [label=<<B>:Course</B><BR/><FONT POINT-SIZE="9">id, title, hours</FONT>>, fillcolor="#2ec4d0"];
+  semester [label=<<B>:Semester</B><BR/><FONT POINT-SIZE="9">id, starts_on, ends_on</FONT>>, fillcolor="#d9d9d9"];
+  location [label=<<B>:Location</B><BR/><FONT POINT-SIZE="9">id, name</FONT>>, fillcolor="#d9d9d9"];
+  lecturer [label=<<B>:Lecturer</B><BR/><FONT POINT-SIZE="9">id, name</FONT>>, fillcolor="#d9d9d9"];
+
+  learner -> run      [label="ENROLLED\n{completed_on}"];
+  learner -> course   [label="COMPLETED\n{completed_on, run_id}", style=dashed];
+  run -> course       [label="OF"];
+  run -> semester     [label="IN"];
+  run -> location     [label="AT"];
+  lecturer -> run     [label="TEACHES"];
+  course -> course    [label="REQUIRES\n(Zielkurs -> Vorkurs)"];
+
+  {rank=same; learner; lecturer;}
+  {rank=same; course; semester; location;}
+}

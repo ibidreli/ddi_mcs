@@ -31,9 +31,7 @@ Kern der Problemstellung sind Ketten von Voraussetzungen. Gesucht ist deshalb ei
 - **Neo4j (NoSQL, Graph):** Kurse, Personen und Durchführungen sind Knoten, Voraussetzungen und Belegungen sind Kanten. Eine Suche über beliebig viele Stufen ist ein einziges Pfadmuster und folgt gespeicherten Kanten statt Joins
 - **PostgreSQL 18.6 (relational):** Mit `WITH RECURSIVE` sind mehrstufige Abfragen auch relational möglich. Der Ausgang des Vergleichs ist damit offen
 
-**Andere NoSQL-Typen**
-- **Dokument (MongoDB):** Ein Vorkurs gehört zu vielen Kursen. Eingebettet entstehen Duplikate. Als Referenz ist die mehrstufige Suche mit `$graphLookup` möglich, die Kurse bleiben aber Dokumente ohne eigene Kanten
-- **Key-Value und Column Store:** Zugriff über Schlüssel, keine Abfrage, die Beziehungen über mehrere Stufen verfolgt
+Dokument-, Key-Value- und Column-Datenbanken passen weniger gut. Ein Vorkurs gehört zu vielen Kursen und würde eingebettet dupliziert, und mehrstufige Beziehungen sind dort nicht das zentrale Abfragemuster.
 
 ## **3) Konzeptionelles Datenmodell**
 
@@ -95,15 +93,7 @@ Schema und Beispielbestand entstehen bei jedem Start neu aus zwei Skripten.
 
 ### **4.3) Prüfungen**
 
-`tests.sql` enthält **32** Prüfungen zu Abfragen, Integrität, Export und Import, Datenänderungen und Strukturänderungen. Die Prüfungen laufen in einer Transaktion und hinterlassen keine Änderungen. Auf PostgreSQL sind alle bestanden.
-
-| Abfrage | Ergebnis |
-|---|---|
-| A-001 für `PROJ` | DE, ML, NOSQL |
-| A-002 für `PROJ` | DE, EIN, ML, MOD, NOSQL, PY, SQL, STAT |
-| A-003 für Person 1 | NOSQL, PY, STAT |
-| A-004 für `PROJ` und Person 1 | DE, ML, NOSQL, PY, STAT mit **42** Stunden |
-| A-005 für Person 1, FS27, Standort 1 | Durchführung 10 (NOSQL) und 12 (PY) |
+`tests.sql` enthält **32** Prüfungen zu Abfragen, Integrität, Export und Import, Datenänderungen und Strukturänderungen. Die Prüfungen laufen in einer Transaktion und hinterlassen keine Änderungen. Auf PostgreSQL sind alle bestanden. Für Person 1 fehlen vor `PROJ` zum Beispiel **5** Vorkurse mit **42** Stunden.
 
 #### **Erkenntnisse**
 
@@ -163,14 +153,6 @@ Das Modell ist auf die Abfragen ausgerichtet. Jede Abfrage beginnt bei einem Kur
 - **Integrität:** Neo4j Community prüft nur die Eindeutigkeit. Fremdschlüssel, Wertebereiche und die Regel „eine Belegung pro Kurs“ prüft PostgreSQL beim Laden. Neo4j übernimmt nur geprüfte Daten
 - **A-002:** `WITH DISTINCT` direkt nach dem Pfadmuster `-[:REQUIRES*1..]->` erlaubt Neo4j, jeden Kurs einmal zu besuchen, statt alle Pfade aufzuzählen
 
-```cypher
-MATCH (:Course {id: $course})-[:REQUIRES*1..]->(p:Course)
-WITH DISTINCT p
-WHERE p.id <> $course
-RETURN p.id AS course_id, p.title AS title, p.hours AS hours
-ORDER BY course_id;
-```
-
 ## **6) Erwartete Vorteile und Messkriterien**
 
 Wir erwarten, dass Neo4j bei tiefen Voraussetzungsketten schneller ist. In PostgreSQL kostet jede Stufe der Rekursion einen Join über den Index, in Neo4j das Folgen gespeicherter Kanten.
@@ -196,19 +178,14 @@ Die Messdaten bilden lange Ketten mit mehreren Wegen zum selben Vorkurs nach. Si
 **Daten (benchmark):**
 - `course`: Kurse in Stufen, Tiefe **5** bis **80** bei **20** Kursen pro Stufe sowie **20** bis **400** Kurse pro Stufe bei Tiefe **10**
 - `prerequisite`: jeder Kurs ab Stufe 1 benötigt zwei Kurse der Stufe darunter, die Hälfte zusätzlich einen Kurs einer tieferen Stufe
-- `learner`, `course_run`, `enrollment`: **20** Personen, Person 1 hat die untere Hälfte der Stufen abgeschlossen
-- `semester`, `location`, `lecturer`: je **2** Einträge für gültige Durchführungen
+- `learner`, `enrollment`: **20** Personen, Person 1 hat die untere Hälfte der Stufen abgeschlossen
 
 **Vorgehen:**
-1. Datensatz erzeugen und in beide Datenbanken laden (`src/benchmark.py`)
-2. K1 prüfen: Weichen die Ergebnisse ab, bricht die Messung ab
-3. **5** Aufwärmläufe, danach **20** gewertete Läufe pro Abfrage und Datenbank, Reihenfolge abwechselnd
-4. Zeit inklusive Ergebnisübertragung mit `perf_counter` im Python-Client messen
-5. Median und Quartile im Notebook `comparison/benchmark.pct.py` auswerten
+1. Datensatz erzeugen, in beide Datenbanken laden und K1 prüfen (`src/benchmark.py`)
+2. **5** Aufwärmläufe, danach **20** gewertete Läufe pro Abfrage und Datenbank, Reihenfolge abwechselnd
+3. Zeit inklusive Ergebnisübertragung im Python-Client messen, Median im Notebook auswerten
 
-**Begründung**
-
-Beide Datenbanken laufen in Docker auf demselben Rechner und werden über ihren offiziellen Python-Treiber angesprochen. Der Median ist robust gegen einzelne Ausreisser durch Hintergrundprozesse. Abfragen über **120 s** werden abgebrochen und als Timeout festgehalten.
+Beide Datenbanken laufen in Docker auf demselben Rechner. Der Median ist robust gegen einzelne Ausreisser, Abfragen über **120 s** gelten als Timeout.
 
 ### **7.2) Abfrageumfang (K4)**
 

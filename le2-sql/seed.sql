@@ -8,11 +8,11 @@ BEGIN;
 -- Stammdaten
 -- Reihenfolge folgt den Fremdschluesseln: zuerst referenzierte Tabellen.
 -- -----------------------------------------------------------------------------
-INSERT INTO lernpfad.semester (semester_id, starts_on, ends_on) VALUES
-    ('HS25', DATE '2025-09-15', DATE '2026-01-31'),
-    ('FS26', DATE '2026-02-16', DATE '2026-07-31'),
-    ('HS26', DATE '2026-09-14', DATE '2027-01-31'),
-    ('FS27', DATE '2027-02-15', DATE '2027-07-31');
+INSERT INTO lernpfad.semester (semester_id, name, starts_on, ends_on) VALUES
+    ('HS25', 'Herbstsemester 2025',   DATE '2025-09-15', DATE '2026-01-31'),
+    ('FS26', 'Frühlingssemester 2026', DATE '2026-02-16', DATE '2026-07-31'),
+    ('HS26', 'Herbstsemester 2026',   DATE '2026-09-14', DATE '2027-01-31'),
+    ('FS27', 'Frühlingssemester 2027', DATE '2027-02-15', DATE '2027-07-31');
 
 INSERT INTO lernpfad.location (location_id, name) VALUES
     (1, 'Brugg-Windisch'),
@@ -57,7 +57,7 @@ INSERT INTO lernpfad.prerequisite (course_id, required_course_id) VALUES
 
 -- -----------------------------------------------------------------------------
 -- Durchfuehrungen
--- HS25 und FS26 abgeschlossen, HS26 laufend, FS27 Angebot fuer A-005
+-- HS25 und FS26 vergangen, HS26 laufend, FS27 Angebot fuer A-004 und A-005
 -- -----------------------------------------------------------------------------
 INSERT INTO lernpfad.course_run (run_id, course_id, semester_id, location_id, lecturer_id, study_mode) VALUES
     ( 1, 'BASICS',      'HS25', 1, 1, 'VZ'),
@@ -79,17 +79,16 @@ INSERT INTO lernpfad.course_run (run_id, course_id, semester_id, location_id, le
     (17, 'DB_MODELING', 'FS27', 2, 2, 'TZ');
 
 -- -----------------------------------------------------------------------------
--- Belegungen
--- completed_on NULL bedeutet laufend (Student C in PYTHON, HS26)
+-- Abschluesse
+-- Gespeichert wird nur, was abgeschlossen ist
 -- -----------------------------------------------------------------------------
-INSERT INTO lernpfad.enrollment (learner_id, course_id, run_id, completed_on) VALUES
+INSERT INTO lernpfad.completion (learner_id, course_id, run_id, completed_on) VALUES
     (1, 'BASICS',  1, DATE '2026-01-20'),
     (1, 'SQL',     3, DATE '2026-06-19'),
     (2, 'BASICS',  2, DATE '2026-01-20'),
     (2, 'PYTHON',  4, DATE '2026-06-19'),
     (2, 'ALGEBRA', 5, DATE '2026-06-26'),
-    (3, 'BASICS',  1, DATE '2026-01-20'),
-    (3, 'PYTHON',  6, NULL);
+    (3, 'BASICS',  1, DATE '2026-01-20');
 
 COMMIT;
 
@@ -100,4 +99,4 @@ ANALYZE lernpfad.course;
 ANALYZE lernpfad.learner;
 ANALYZE lernpfad.prerequisite;
 ANALYZE lernpfad.course_run;
-ANALYZE lernpfad.enrollment;
+ANALYZE lernpfad.completion;

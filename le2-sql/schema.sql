@@ -30,6 +30,7 @@ CREATE TABLE lernpfad.learner (
 
 CREATE TABLE lernpfad.semester (
     semester_id TEXT PRIMARY KEY CHECK (semester_id ~ '^(HS|FS)[0-9]{2}$'),
+    name        TEXT NOT NULL UNIQUE CHECK (length(btrim(name)) > 0),
     starts_on   DATE NOT NULL,
     ends_on     DATE NOT NULL,
     CHECK (ends_on > starts_on)
@@ -57,7 +58,7 @@ CREATE TABLE lernpfad.course_run (
     lecturer_id INTEGER NOT NULL REFERENCES lernpfad.lecturer (lecturer_id)
                     ON UPDATE CASCADE ON DELETE RESTRICT,
     study_mode  TEXT NOT NULL CHECK (study_mode IN ('VZ', 'TZ')),
-    -- Ziel des zusammengesetzten Fremdschluessels in enrollment
+    -- Ziel des zusammengesetzten Fremdschluessels in completion
     UNIQUE (run_id, course_id),
     -- Ein Kurs wird pro Semester, Standort und Studienform hoechstens einmal angeboten
     UNIQUE (course_id, semester_id, location_id, study_mode)
@@ -65,7 +66,7 @@ CREATE TABLE lernpfad.course_run (
 
 -- -----------------------------------------------------------------------------
 -- Beziehungen mit eigener Tabelle
--- prerequisite (Kurs setzt Kurs voraus) und enrollment (Person belegt Durchfuehrung)
+-- prerequisite (Kurs setzt Kurs voraus) und completion (Person schliesst Durchfuehrung ab)
 -- -----------------------------------------------------------------------------
 CREATE TABLE lernpfad.prerequisite (
     course_id          TEXT NOT NULL REFERENCES lernpfad.course (course_id)
@@ -77,32 +78,33 @@ CREATE TABLE lernpfad.prerequisite (
 );
 COMMENT ON TABLE lernpfad.prerequisite IS 'Zielkurs benoetigt Vorkurs; mehrere Zeilen bedeuten UND';
 
--- course_id ist hier bewusst mitgefuehrt. Der zusammengesetzte Fremdschluessel
+-- Ein Kurs ist abgeschlossen oder nicht besucht, laufende Kurse werden nicht gespeichert.
+-- course_id ist bewusst mitgefuehrt. Der zusammengesetzte Fremdschluessel
 -- (run_id, course_id) stellt sicher, dass sie zur Durchfuehrung passt, und der
--- Primaerschluessel erlaubt pro Person und Kurs hoechstens eine Belegung.
-CREATE TABLE lernpfad.enrollment (
+-- Primaerschluessel erlaubt pro Person und Kurs hoechstens einen Abschluss.
+CREATE TABLE lernpfad.completion (
     learner_id   INTEGER NOT NULL REFERENCES lernpfad.learner (learner_id)
                      ON UPDATE CASCADE ON DELETE RESTRICT,
     course_id    TEXT NOT NULL,
     run_id       INTEGER NOT NULL,
-    completed_on DATE,
+    completed_on DATE NOT NULL,
     PRIMARY KEY (learner_id, course_id),
     FOREIGN KEY (run_id, course_id) REFERENCES lernpfad.course_run (run_id, course_id)
         ON UPDATE CASCADE ON DELETE RESTRICT
 );
-COMMENT ON COLUMN lernpfad.enrollment.completed_on IS 'NULL bedeutet: Belegung laeuft noch';
 
 -- -----------------------------------------------------------------------------
 -- Indizes
--- PK- und UNIQUE-Indizes decken die Suche ab Zielkurs, Person und Kurs ab.
+-- PK- und UNIQUE-Indizes decken die Suche ab Zielkurs, Person und Kurs ab,
+-- der UNIQUE-Index auf course_run auch A-004 (Kurs, Semester).
 -- Die folgenden Indizes stuetzen Gegenrichtung, FK-Pruefungen und A-005.
 -- -----------------------------------------------------------------------------
 CREATE INDEX prerequisite_required_idx ON lernpfad.prerequisite (required_course_id, course_id);
-CREATE INDEX enrollment_run_idx        ON lernpfad.enrollment (run_id);
-CREATE INDEX course_run_offer_idx      ON lernpfad.course_run (semester_id, location_id, study_mode);
+CREATE INDEX completion_run_idx        ON lernpfad.completion (run_id);
+CREATE INDEX course_run_lecturer_idx   ON lernpfad.course_run (lecturer_id, semester_id);
 
 -- -----------------------------------------------------------------------------
--- A-002: alle direkten und indirekten Voraussetzungen
+-- A-001: alle Voraussetzungen ueber alle Stufen
 -- UNION auf der Kurs-ID zaehlt jeden Vorkurs einmal und beendet die Rekursion
 -- auch bei fehlerhaften Zyklen.
 -- -----------------------------------------------------------------------------
@@ -125,8 +127,8 @@ LANGUAGE sql STABLE AS $$
 $$;
 
 -- -----------------------------------------------------------------------------
--- A-003: Kurse, die eine Person jetzt belegen darf
--- Noch nicht belegt und alle Voraussetzungen abgeschlossen (completed_on gesetzt).
+-- A-002: Kurse, die eine Person als Naechstes belegen darf
+-- Noch nicht abgeschlossen und alle Voraussetzungen ueber alle Stufen abgeschlossen.
 -- -----------------------------------------------------------------------------
 CREATE FUNCTION lernpfad.eligible_courses(person_id INTEGER)
 RETURNS TABLE (course_id TEXT, title TEXT, hours INTEGER)
@@ -135,23 +137,20 @@ LANGUAGE sql STABLE AS $$
     FROM lernpfad.course AS c
     WHERE EXISTS (SELECT 1 FROM lernpfad.learner AS l WHERE l.learner_id = person_id)
       AND NOT EXISTS (
-          SELECT 1 FROM lernpfad.enrollment AS e
-          WHERE e.learner_id = person_id AND e.course_id = c.course_id
+          SELECT 1 FROM lernpfad.completion AS d
+          WHERE d.learner_id = person_id AND d.course_id = c.course_id
       )
       AND NOT EXISTS (
           SELECT 1 FROM lernpfad.all_prerequisites(c.course_id) AS r
           WHERE NOT EXISTS (
-              SELECT 1 FROM lernpfad.enrollment AS e
-              WHERE e.learner_id = person_id
-                AND e.course_id = r.course_id
-                AND e.completed_on IS NOT NULL
+              SELECT 1 FROM lernpfad.completion AS d
+              WHERE d.learner_id = person_id AND d.course_id = r.course_id
           )
       );
 $$;
 
 -- -----------------------------------------------------------------------------
--- A-004: fehlende Vorkurse einer Person fuer einen Zielkurs
--- Laufende Belegungen zaehlen noch nicht als abgeschlossen.
+-- A-003: Kurse, die einer Person fuer einen Zielkurs noch fehlen
 -- -----------------------------------------------------------------------------
 CREATE FUNCTION lernpfad.missing_prerequisites(target_course TEXT, person_id INTEGER)
 RETURNS TABLE (course_id TEXT, title TEXT, hours INTEGER)
@@ -160,29 +159,42 @@ LANGUAGE sql STABLE AS $$
     FROM lernpfad.all_prerequisites(target_course) AS r
     WHERE EXISTS (SELECT 1 FROM lernpfad.learner AS l WHERE l.learner_id = person_id)
       AND NOT EXISTS (
-          SELECT 1 FROM lernpfad.enrollment AS e
-          WHERE e.learner_id = person_id
-            AND e.course_id = r.course_id
-            AND e.completed_on IS NOT NULL
+          SELECT 1 FROM lernpfad.completion AS d
+          WHERE d.learner_id = person_id AND d.course_id = r.course_id
       );
 $$;
 
 -- -----------------------------------------------------------------------------
--- A-005: passende Durchfuehrungen der naechsten Kurse
--- Semester und Standort als Parameter, Studienform aus der Person.
+-- A-004: wo und bei wem eine Person einen Kurs in einem Semester besuchen kann
+-- Nur wenn sie den Kurs belegen darf (A-002) und die Studienform passt.
 -- -----------------------------------------------------------------------------
-CREATE FUNCTION lernpfad.available_runs(person_id INTEGER, target_semester TEXT, target_location INTEGER)
-RETURNS TABLE (run_id INTEGER, course_id TEXT, title TEXT, lecturer TEXT)
+CREATE FUNCTION lernpfad.course_offers(person_id INTEGER, target_course TEXT, target_semester TEXT)
+RETURNS TABLE (run_id INTEGER, location TEXT, lecturer TEXT)
 LANGUAGE sql STABLE AS $$
-    SELECT r.run_id, c.course_id, c.title, t.display_name
+    SELECT r.run_id, o.name, t.display_name
     FROM lernpfad.learner AS l
     JOIN lernpfad.course_run AS r
-      ON r.study_mode = l.study_mode
+      ON r.course_id = target_course
      AND r.semester_id = target_semester
-     AND r.location_id = target_location
-    JOIN lernpfad.eligible_courses(person_id) AS c ON c.course_id = r.course_id
+     AND r.study_mode = l.study_mode
+    JOIN lernpfad.location AS o ON o.location_id = r.location_id
     JOIN lernpfad.lecturer AS t ON t.lecturer_id = r.lecturer_id
-    WHERE l.learner_id = person_id;
+    WHERE l.learner_id = person_id
+      AND target_course IN (SELECT e.course_id FROM lernpfad.eligible_courses(person_id) AS e);
+$$;
+
+-- -----------------------------------------------------------------------------
+-- A-005: Kurse einer Lehrperson in einem Semester
+-- -----------------------------------------------------------------------------
+CREATE FUNCTION lernpfad.lecturer_courses(person_id INTEGER, target_semester TEXT)
+RETURNS TABLE (run_id INTEGER, course_id TEXT, title TEXT, location TEXT, study_mode TEXT)
+LANGUAGE sql STABLE AS $$
+    SELECT r.run_id, c.course_id, c.title, o.name, r.study_mode
+    FROM lernpfad.course_run AS r
+    JOIN lernpfad.course AS c ON c.course_id = r.course_id
+    JOIN lernpfad.location AS o ON o.location_id = r.location_id
+    WHERE r.lecturer_id = person_id
+      AND r.semester_id = target_semester;
 $$;
 
 -- -----------------------------------------------------------------------------
@@ -218,8 +230,8 @@ SELECT jsonb_build_object(
     'prerequisites', (SELECT coalesce(jsonb_agg(to_jsonb(x) ORDER BY x.course_id, x.required_course_id), '[]')
                       FROM lernpfad.prerequisite AS x),
     'course_runs',   (SELECT coalesce(jsonb_agg(to_jsonb(x) ORDER BY x.run_id), '[]') FROM lernpfad.course_run AS x),
-    'enrollments',   (SELECT coalesce(jsonb_agg(to_jsonb(x) ORDER BY x.learner_id, x.course_id), '[]')
-                      FROM lernpfad.enrollment AS x)
+    'completions',   (SELECT coalesce(jsonb_agg(to_jsonb(x) ORDER BY x.learner_id, x.course_id), '[]')
+                      FROM lernpfad.completion AS x)
 ) AS payload;
 
 COMMIT;

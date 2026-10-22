@@ -1,0 +1,7 @@
+psycopg[binary]>=3.2
+neo4j>=5.28,<6
+pytest>=8.3
+pandas>=2.2
+matplotlib>=3.9
+jupytext>=1.16
+ipykernel>=6.29

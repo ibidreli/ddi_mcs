@@ -1,0 +1,372 @@
+{
+  "courses": [
+    {
+      "hours": 10,
+      "title": "Datenpipelines",
+      "course_id": "DE"
+    },
+    {
+      "hours": 4,
+      "title": "Digitale Grundlagen",
+      "course_id": "EIN"
+    },
+    {
+      "hours": 10,
+      "title": "Machine Learning",
+      "course_id": "ML"
+    },
+    {
+      "hours": 6,
+      "title": "Datenmodellierung",
+      "course_id": "MOD"
+    },
+    {
+      "hours": 8,
+      "title": "NoSQL-Grundlagen",
+      "course_id": "NOSQL"
+    },
+    {
+      "hours": 12,
+      "title": "Data-Science-Projekt",
+      "course_id": "PROJ"
+    },
+    {
+      "hours": 8,
+      "title": "Python-Grundlagen",
+      "course_id": "PY"
+    },
+    {
+      "hours": 8,
+      "title": "SQL-Grundlagen",
+      "course_id": "SQL"
+    },
+    {
+      "hours": 6,
+      "title": "Statistik-Grundlagen",
+      "course_id": "STAT"
+    },
+    {
+      "hours": 6,
+      "title": "Datenvisualisierung",
+      "course_id": "VIS"
+    }
+  ],
+  "learners": [
+    {
+      "learner_id": 1,
+      "study_mode": "VZ",
+      "display_name": "Lernende A"
+    },
+    {
+      "learner_id": 2,
+      "study_mode": "TZ",
+      "display_name": "Lernende B"
+    },
+    {
+      "learner_id": 3,
+      "study_mode": "VZ",
+      "display_name": "Lernende C"
+    }
+  ],
+  "lecturers": [
+    {
+      "lecturer_id": 1,
+      "display_name": "L. Keller"
+    },
+    {
+      "lecturer_id": 2,
+      "display_name": "M. Frei"
+    },
+    {
+      "lecturer_id": 3,
+      "display_name": "S. Huber"
+    },
+    {
+      "lecturer_id": 4,
+      "display_name": "T. Brunner"
+    }
+  ],
+  "locations": [
+    {
+      "name": "Brugg-Windisch",
+      "location_id": 1
+    },
+    {
+      "name": "Olten",
+      "location_id": 2
+    },
+    {
+      "name": "Basel",
+      "location_id": 3
+    }
+  ],
+  "semesters": [
+    {
+      "ends_on": "2026-07-31",
+      "starts_on": "2026-02-16",
+      "semester_id": "FS26"
+    },
+    {
+      "ends_on": "2027-07-31",
+      "starts_on": "2027-02-15",
+      "semester_id": "FS27"
+    },
+    {
+      "ends_on": "2026-01-31",
+      "starts_on": "2025-09-15",
+      "semester_id": "HS25"
+    },
+    {
+      "ends_on": "2027-01-31",
+      "starts_on": "2026-09-14",
+      "semester_id": "HS26"
+    }
+  ],
+  "course_runs": [
+    {
+      "run_id": 1,
+      "course_id": "EIN",
+      "study_mode": "VZ",
+      "lecturer_id": 1,
+      "location_id": 1,
+      "semester_id": "HS25"
+    },
+    {
+      "run_id": 2,
+      "course_id": "EIN",
+      "study_mode": "TZ",
+      "lecturer_id": 1,
+      "location_id": 2,
+      "semester_id": "HS25"
+    },
+    {
+      "run_id": 3,
+      "course_id": "SQL",
+      "study_mode": "VZ",
+      "lecturer_id": 2,
+      "location_id": 1,
+      "semester_id": "FS26"
+    },
+    {
+      "run_id": 4,
+      "course_id": "MOD",
+      "study_mode": "VZ",
+      "lecturer_id": 3,
+      "location_id": 1,
+      "semester_id": "FS26"
+    },
+    {
+      "run_id": 5,
+      "course_id": "PY",
+      "study_mode": "TZ",
+      "lecturer_id": 4,
+      "location_id": 2,
+      "semester_id": "FS26"
+    },
+    {
+      "run_id": 6,
+      "course_id": "STAT",
+      "study_mode": "TZ",
+      "lecturer_id": 3,
+      "location_id": 2,
+      "semester_id": "FS26"
+    },
+    {
+      "run_id": 7,
+      "course_id": "SQL",
+      "study_mode": "VZ",
+      "lecturer_id": 2,
+      "location_id": 1,
+      "semester_id": "HS26"
+    },
+    {
+      "run_id": 8,
+      "course_id": "PY",
+      "study_mode": "VZ",
+      "lecturer_id": 4,
+      "location_id": 1,
+      "semester_id": "HS26"
+    },
+    {
+      "run_id": 9,
+      "course_id": "STAT",
+      "study_mode": "TZ",
+      "lecturer_id": 3,
+      "location_id": 2,
+      "semester_id": "HS26"
+    },
+    {
+      "run_id": 10,
+      "course_id": "NOSQL",
+      "study_mode": "VZ",
+      "lecturer_id": 2,
+      "location_id": 1,
+      "semester_id": "FS27"
+    },
+    {
+      "run_id": 11,
+      "course_id": "NOSQL",
+      "study_mode": "TZ",
+      "lecturer_id": 2,
+      "location_id": 2,
+      "semester_id": "FS27"
+    },
+    {
+      "run_id": 12,
+      "course_id": "PY",
+      "study_mode": "VZ",
+      "lecturer_id": 4,
+      "location_id": 1,
+      "semester_id": "FS27"
+    },
+    {
+      "run_id": 13,
+      "course_id": "STAT",
+      "study_mode": "VZ",
+      "lecturer_id": 3,
+      "location_id": 2,
+      "semester_id": "FS27"
+    },
+    {
+      "run_id": 14,
+      "course_id": "DE",
+      "study_mode": "VZ",
+      "lecturer_id": 1,
+      "location_id": 1,
+      "semester_id": "FS27"
+    },
+    {
+      "run_id": 15,
+      "course_id": "ML",
+      "study_mode": "VZ",
+      "lecturer_id": 4,
+      "location_id": 3,
+      "semester_id": "FS27"
+    },
+    {
+      "run_id": 16,
+      "course_id": "VIS",
+      "study_mode": "VZ",
+      "lecturer_id": 3,
+      "location_id": 1,
+      "semester_id": "FS27"
+    },
+    {
+      "run_id": 17,
+      "course_id": "MOD",
+      "study_mode": "TZ",
+      "lecturer_id": 3,
+      "location_id": 2,
+      "semester_id": "FS27"
+    }
+  ],
+  "enrollments": [
+    {
+      "run_id": 1,
+      "course_id": "EIN",
+      "learner_id": 1,
+      "completed_on": "2026-01-20"
+    },
+    {
+      "run_id": 4,
+      "course_id": "MOD",
+      "learner_id": 1,
+      "completed_on": "2026-06-26"
+    },
+    {
+      "run_id": 3,
+      "course_id": "SQL",
+      "learner_id": 1,
+      "completed_on": "2026-06-19"
+    },
+    {
+      "run_id": 2,
+      "course_id": "EIN",
+      "learner_id": 2,
+      "completed_on": "2026-01-20"
+    },
+    {
+      "run_id": 5,
+      "course_id": "PY",
+      "learner_id": 2,
+      "completed_on": "2026-06-19"
+    },
+    {
+      "run_id": 6,
+      "course_id": "STAT",
+      "learner_id": 2,
+      "completed_on": "2026-06-26"
+    },
+    {
+      "run_id": 1,
+      "course_id": "EIN",
+      "learner_id": 3,
+      "completed_on": "2026-01-20"
+    },
+    {
+      "run_id": 7,
+      "course_id": "SQL",
+      "learner_id": 3,
+      "completed_on": null
+    }
+  ],
+  "prerequisites": [
+    {
+      "course_id": "DE",
+      "required_course_id": "PY"
+    },
+    {
+      "course_id": "DE",
+      "required_course_id": "SQL"
+    },
+    {
+      "course_id": "ML",
+      "required_course_id": "PY"
+    },
+    {
+      "course_id": "ML",
+      "required_course_id": "STAT"
+    },
+    {
+      "course_id": "MOD",
+      "required_course_id": "EIN"
+    },
+    {
+      "course_id": "NOSQL",
+      "required_course_id": "MOD"
+    },
+    {
+      "course_id": "NOSQL",
+      "required_course_id": "SQL"
+    },
+    {
+      "course_id": "PROJ",
+      "required_course_id": "DE"
+    },
+    {
+      "course_id": "PROJ",
+      "required_course_id": "ML"
+    },
+    {
+      "course_id": "PROJ",
+      "required_course_id": "NOSQL"
+    },
+    {
+      "course_id": "PY",
+      "required_course_id": "EIN"
+    },
+    {
+      "course_id": "SQL",
+      "required_course_id": "EIN"
+    },
+    {
+      "course_id": "STAT",
+      "required_course_id": "EIN"
+    },
+    {
+      "course_id": "VIS",
+      "required_course_id": "PY"
+    }
+  ],
+  "dataset_version": "synthetic-v2"
+}

@@ -1,0 +1,90 @@
+// relational.dot
+// Relationales Modell (logisches Schema) der PostgreSQL-Umsetzung, Variante V2.
+// Primaerschluessel unterstrichen, Fremdschluessel mit (FK) markiert,
+// Pfeile vom Fremdschluessel zum referenzierten Primaerschluessel.
+// Rendern: dot -Tpng relational.dot -o relational.png
+digraph relational {
+  graph [rankdir=LR, pad=0.3, nodesep=0.45, ranksep=1.0, bgcolor="white"];
+  node  [shape=plaintext, fontname="Helvetica", fontsize=11];
+  edge  [arrowhead=normal, arrowsize=0.8, penwidth=1.1, color="#333333"];
+
+  learner [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" BGCOLOR="white">
+      <TR><TD BGCOLOR="#2ec4d0" COLSPAN="2"><B>learner</B></TD></TR>
+      <TR><TD ALIGN="LEFT" PORT="pk"><U>learner_id</U></TD><TD ALIGN="LEFT">integer</TD></TR>
+      <TR><TD ALIGN="LEFT">display_name</TD><TD ALIGN="LEFT">text</TD></TR>
+      <TR><TD ALIGN="LEFT">study_mode</TD><TD ALIGN="LEFT">text</TD></TR>
+    </TABLE>>];
+
+  enrollment [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" BGCOLOR="white">
+      <TR><TD BGCOLOR="#8cc63f" COLSPAN="2"><B>enrollment</B></TD></TR>
+      <TR><TD ALIGN="LEFT" PORT="learner"><U>learner_id</U> (FK)</TD><TD ALIGN="LEFT">integer</TD></TR>
+      <TR><TD ALIGN="LEFT" PORT="course"><U>course_id</U> (FK)</TD><TD ALIGN="LEFT">text</TD></TR>
+      <TR><TD ALIGN="LEFT" PORT="run">run_id (FK)</TD><TD ALIGN="LEFT">integer</TD></TR>
+      <TR><TD ALIGN="LEFT">completed_on</TD><TD ALIGN="LEFT">date, NULL</TD></TR>
+    </TABLE>>];
+
+  course_run [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" BGCOLOR="white">
+      <TR><TD BGCOLOR="#2ec4d0" COLSPAN="2"><B>course_run</B></TD></TR>
+      <TR><TD ALIGN="LEFT" PORT="pk"><U>run_id</U></TD><TD ALIGN="LEFT">integer</TD></TR>
+      <TR><TD ALIGN="LEFT" PORT="course">course_id (FK)</TD><TD ALIGN="LEFT">text</TD></TR>
+      <TR><TD ALIGN="LEFT" PORT="semester">semester_id (FK)</TD><TD ALIGN="LEFT">text</TD></TR>
+      <TR><TD ALIGN="LEFT" PORT="location">location_id (FK)</TD><TD ALIGN="LEFT">integer</TD></TR>
+      <TR><TD ALIGN="LEFT" PORT="lecturer">lecturer_id (FK)</TD><TD ALIGN="LEFT">integer</TD></TR>
+      <TR><TD ALIGN="LEFT">study_mode</TD><TD ALIGN="LEFT">text</TD></TR>
+    </TABLE>>];
+
+  course [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" BGCOLOR="white">
+      <TR><TD BGCOLOR="#2ec4d0" COLSPAN="2"><B>course</B></TD></TR>
+      <TR><TD ALIGN="LEFT" PORT="pk"><U>course_id</U></TD><TD ALIGN="LEFT">text</TD></TR>
+      <TR><TD ALIGN="LEFT">title</TD><TD ALIGN="LEFT">text</TD></TR>
+      <TR><TD ALIGN="LEFT">hours</TD><TD ALIGN="LEFT">integer</TD></TR>
+    </TABLE>>];
+
+  prerequisite [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" BGCOLOR="white">
+      <TR><TD BGCOLOR="#8cc63f" COLSPAN="2"><B>prerequisite</B></TD></TR>
+      <TR><TD ALIGN="LEFT" PORT="course"><U>course_id</U> (FK)</TD><TD ALIGN="LEFT">text</TD></TR>
+      <TR><TD ALIGN="LEFT" PORT="required"><U>required_course_id</U> (FK)</TD><TD ALIGN="LEFT">text</TD></TR>
+    </TABLE>>];
+
+  semester [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" BGCOLOR="white">
+      <TR><TD BGCOLOR="#2ec4d0" COLSPAN="2"><B>semester</B></TD></TR>
+      <TR><TD ALIGN="LEFT" PORT="pk"><U>semester_id</U></TD><TD ALIGN="LEFT">text</TD></TR>
+      <TR><TD ALIGN="LEFT">starts_on</TD><TD ALIGN="LEFT">date</TD></TR>
+      <TR><TD ALIGN="LEFT">ends_on</TD><TD ALIGN="LEFT">date</TD></TR>
+    </TABLE>>];
+
+  location [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" BGCOLOR="white">
+      <TR><TD BGCOLOR="#2ec4d0" COLSPAN="2"><B>location</B></TD></TR>
+      <TR><TD ALIGN="LEFT" PORT="pk"><U>location_id</U></TD><TD ALIGN="LEFT">integer</TD></TR>
+      <TR><TD ALIGN="LEFT">name</TD><TD ALIGN="LEFT">text</TD></TR>
+    </TABLE>>];
+
+  lecturer [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" BGCOLOR="white">
+      <TR><TD BGCOLOR="#2ec4d0" COLSPAN="2"><B>lecturer</B></TD></TR>
+      <TR><TD ALIGN="LEFT" PORT="pk"><U>lecturer_id</U></TD><TD ALIGN="LEFT">integer</TD></TR>
+      <TR><TD ALIGN="LEFT">display_name</TD><TD ALIGN="LEFT">text</TD></TR>
+    </TABLE>>];
+
+  {rank=same; learner;}
+  {rank=same; enrollment;}
+  {rank=same; course_run; prerequisite;}
+  {rank=same; course; semester; location; lecturer;}
+
+  enrollment:learner:w -> learner:pk:e;
+  enrollment:run:e -> course_run:pk:w [label=" (run_id, course_id)", fontsize=10, fontname="Helvetica"];
+  enrollment:course:e -> course_run:course:w [style=dashed];
+  course_run:course:e -> course:pk:w;
+  course_run:semester:e -> semester:pk:w;
+  course_run:location:e -> location:pk:w;
+  course_run:lecturer:e -> lecturer:pk:w;
+  prerequisite:course:e -> course:pk:w;
+  prerequisite:required:e -> course:pk:w;
+}

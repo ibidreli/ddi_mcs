@@ -27,6 +27,6 @@ def test_table_identical_after_import(imported, key):
 def test_import_rejects_invalid_data():
     # Die Constraints gelten auch beim Import: ein Vorkurs ohne Kurs bricht ab
     data = dataset.read_json(config.SEED_JSON)
-    data["prerequisites"].append({"course_id": "PROJ", "required_course_id": "FEHLT"})
+    data["prerequisites"].append({"course_id": "ML", "required_course_id": "FEHLT"})
     with pytest.raises(Exception):
         load_postgres(data, dbname=config.PG_DB_BENCHMARK)

@@ -35,53 +35,53 @@ SELECT pg_temp.check_result('P01',
     AND (SELECT count(*) = 3 FROM lernpfad.learner)
     AND (SELECT count(*) = 14 FROM lernpfad.prerequisite)
     AND (SELECT count(*) = 17 FROM lernpfad.course_run)
-    AND (SELECT count(*) = 8 FROM lernpfad.enrollment)
-    AND (SELECT count(*) = 7 FROM lernpfad.enrollment WHERE completed_on IS NOT NULL),
-    'Bestand: 4 Semester, 3 Standorte, 4 Lehrpersonen, 10 Kurse, 3 Personen, 14 Voraussetzungen, 17 Durchfuehrungen, 8 Belegungen');
+    AND (SELECT count(*) = 7 FROM lernpfad.enrollment)
+    AND (SELECT count(*) = 6 FROM lernpfad.enrollment WHERE completed_on IS NOT NULL),
+    'Bestand: 4 Semester, 3 Standorte, 4 Lehrpersonen, 10 Kurse, 3 Personen, 14 Voraussetzungen, 17 Durchfuehrungen, 7 Belegungen');
 SELECT pg_temp.check_result('P02',
     (SELECT array_agg(required_course_id ORDER BY required_course_id)
-     FROM lernpfad.prerequisite WHERE course_id = 'PROJ') = ARRAY['DE', 'ML', 'NOSQL'],
-    'A-001: direkte Voraussetzungen von PROJ');
+     FROM lernpfad.prerequisite WHERE course_id = 'ML') = ARRAY['ALGEBRA', 'ANALYSIS', 'EDA', 'PYTHON'],
+    'A-001: eingetragene Voraussetzungen von ML');
 SELECT pg_temp.check_result('P03',
-    (SELECT array_agg(course_id ORDER BY course_id) FROM lernpfad.all_prerequisites('PROJ'))
-     = ARRAY['DE', 'EIN', 'ML', 'MOD', 'NOSQL', 'PY', 'SQL', 'STAT'],
-    'A-002: acht eindeutige Voraussetzungen von PROJ');
+    (SELECT array_agg(course_id ORDER BY course_id) FROM lernpfad.all_prerequisites('ML'))
+     = ARRAY['ALGEBRA', 'ANALYSIS', 'BASICS', 'EDA', 'PYTHON', 'SQL'],
+    'A-002: sechs eindeutige Voraussetzungen von ML');
 SELECT pg_temp.check_result('P04',
-    (SELECT count(*) = 0 FROM lernpfad.all_prerequisites('EIN')),
-    'A-002: Grundlagenkurs EIN hat keine Voraussetzungen');
+    (SELECT count(*) = 0 FROM lernpfad.all_prerequisites('BASICS')),
+    'A-002: Grundlagenkurs BASICS hat keine Voraussetzungen');
 SELECT pg_temp.check_result('P05',
     (SELECT array_agg(course_id ORDER BY course_id) FROM lernpfad.eligible_courses(1))
-     = ARRAY['NOSQL', 'PY', 'STAT'],
-    'A-003: naechste Kurse fuer Person 1');
+     = ARRAY['ALGEBRA', 'DB_MODELING', 'PYTHON'],
+    'A-003: naechste Kurse fuer Student A');
 SELECT pg_temp.check_result('P06',
     (SELECT array_agg(course_id ORDER BY course_id) FROM lernpfad.eligible_courses(2))
-     = ARRAY['ML', 'MOD', 'SQL', 'VIS'],
-    'A-003: naechste Kurse fuer Person 2');
+     = ARRAY['ANALYSIS', 'SQL'],
+    'A-003: naechste Kurse fuer Student B');
 SELECT pg_temp.check_result('P07',
     (SELECT array_agg(course_id ORDER BY course_id) FROM lernpfad.eligible_courses(3))
-     = ARRAY['MOD', 'PY', 'STAT'],
-    'A-003: laufende Belegung SQL wird nicht erneut empfohlen');
+     = ARRAY['ALGEBRA', 'SQL'],
+    'A-003: laufende Belegung PYTHON wird nicht erneut empfohlen');
 SELECT pg_temp.check_result('P08',
     (SELECT count(*) = 0 FROM lernpfad.eligible_courses(999))
-    AND (SELECT count(*) = 0 FROM lernpfad.missing_prerequisites('PROJ', 999))
+    AND (SELECT count(*) = 0 FROM lernpfad.missing_prerequisites('ML', 999))
     AND (SELECT count(*) = 0 FROM lernpfad.available_runs(999, 'FS27', 1)),
     'Unbekannte Person erhaelt keine Ergebnisse');
 SELECT pg_temp.check_result('P09',
-    (SELECT array_agg(course_id ORDER BY course_id) FROM lernpfad.missing_prerequisites('PROJ', 1))
-     = ARRAY['DE', 'ML', 'NOSQL', 'PY', 'STAT']
-    AND (SELECT sum(hours) = 42 FROM lernpfad.missing_prerequisites('PROJ', 1)),
-    'A-004: Person 1 fehlen 5 Vorkurse mit 42 Stunden');
+    (SELECT array_agg(course_id ORDER BY course_id) FROM lernpfad.missing_prerequisites('ML', 1))
+     = ARRAY['ALGEBRA', 'ANALYSIS', 'EDA', 'PYTHON']
+    AND (SELECT sum(hours) = 26 FROM lernpfad.missing_prerequisites('ML', 1)),
+    'A-004: Student A fehlen fuer ML 4 Kurse mit 26 Stunden');
 SELECT pg_temp.check_result('P10',
-    (SELECT count(*) = 7 AND sum(hours) = 56 FROM lernpfad.missing_prerequisites('PROJ', 3)),
-    'A-004: laufende Belegung zaehlt noch als fehlend (7 Kurse, 56 Stunden)');
+    (SELECT count(*) = 5 AND sum(hours) = 34 FROM lernpfad.missing_prerequisites('ML', 3)),
+    'A-004: laufende Belegung zaehlt noch als fehlend (5 Kurse, 34 Stunden)');
 SELECT pg_temp.check_result('P11',
     (SELECT array_agg(run_id::TEXT || ':' || course_id ORDER BY course_id, run_id)
-     FROM lernpfad.available_runs(1, 'FS27', 1)) = ARRAY['10:NOSQL', '12:PY'],
-    'A-005: Person 1 (VZ) in FS27 am Standort 1');
+     FROM lernpfad.available_runs(1, 'FS27', 1)) = ARRAY['10:ALGEBRA', '11:DB_MODELING', '9:PYTHON'],
+    'A-005: Student A (VZ) in FS27 in Brugg-Windisch');
 SELECT pg_temp.check_result('P12',
     (SELECT array_agg(run_id::TEXT || ':' || course_id ORDER BY course_id, run_id)
-     FROM lernpfad.available_runs(2, 'FS27', 2)) = ARRAY['17:MOD'],
-    'A-005: Person 2 (TZ) in FS27 am Standort 2, nur passende Studienform');
+     FROM lernpfad.available_runs(2, 'FS27', 2)) = ARRAY['12:ANALYSIS', '13:SQL'],
+    'A-005: Student B (TZ) in FS27 in Olten, nur passende Studienform');
 SELECT pg_temp.check_result('P13',
     (SELECT count(*) = 0 FROM lernpfad.prerequisite_cycles()),
     'Voraussetzungen sind azyklisch');
@@ -93,7 +93,7 @@ SELECT pg_temp.check_result('P13',
 DO $$
 BEGIN
     BEGIN
-        INSERT INTO lernpfad.enrollment VALUES (999, 'EIN', 1, NULL);
+        INSERT INTO lernpfad.enrollment VALUES (999, 'BASICS', 1, NULL);
         RAISE EXCEPTION 'Unbekannte Person wurde akzeptiert';
     EXCEPTION WHEN foreign_key_violation THEN NULL;
     END;
@@ -128,7 +128,7 @@ BEGIN
     PERFORM pg_temp.check_result('P18', TRUE, 'CHECK: Stunden muessen positiv sein');
 
     BEGIN
-        INSERT INTO lernpfad.prerequisite VALUES ('SQL', 'EIN');
+        INSERT INTO lernpfad.prerequisite VALUES ('SQL', 'BASICS');
         RAISE EXCEPTION 'Doppelte Voraussetzung wurde akzeptiert';
     EXCEPTION WHEN unique_violation THEN NULL;
     END;
@@ -156,7 +156,7 @@ BEGIN
     PERFORM pg_temp.check_result('P22', TRUE, 'UNIQUE: ein Angebot pro Kurs, Semester, Standort und Studienform');
 
     BEGIN
-        DELETE FROM lernpfad.course WHERE course_id = 'EIN';
+        DELETE FROM lernpfad.course WHERE course_id = 'BASICS';
         RAISE EXCEPTION 'Referenzierter Kurs wurde geloescht';
     EXCEPTION WHEN foreign_key_violation OR restrict_violation THEN NULL;
     END;
@@ -216,27 +216,27 @@ SELECT pg_temp.check_result('P26',
 -- Jede Aenderung wird mit einem Savepoint zurueckgesetzt.
 -- -----------------------------------------------------------------------------
 SAVEPOINT cycle_case;
-INSERT INTO lernpfad.prerequisite VALUES ('EIN', 'PROJ');
+INSERT INTO lernpfad.prerequisite VALUES ('BASICS', 'ML');
 SELECT pg_temp.check_result('P27', EXISTS (SELECT 1 FROM lernpfad.prerequisite_cycles()),
     'Zyklus ueber mehrere Stufen wird erkannt');
 ROLLBACK TO SAVEPOINT cycle_case;
 INSERT INTO results VALUES ('P27', 'Zyklus ueber mehrere Stufen wird erkannt; Testkante zurueckgerollt');
 
 SAVEPOINT new_completion;
-INSERT INTO lernpfad.enrollment VALUES (1, 'PY', 8, DATE '2026-12-18');
+INSERT INTO lernpfad.enrollment VALUES (1, 'PYTHON', 6, DATE '2026-12-18');
 SELECT pg_temp.check_result('P28',
     (SELECT array_agg(course_id ORDER BY course_id) FROM lernpfad.eligible_courses(1))
-     = ARRAY['DE', 'NOSQL', 'STAT', 'VIS'],
-    'Neuer Abschluss PY aendert die Empfehlungen von Person 1');
+     = ARRAY['ALGEBRA', 'DB_MODELING', 'EDA'],
+    'Neuer Abschluss PYTHON aendert die Empfehlungen von Student A');
 ROLLBACK TO SAVEPOINT new_completion;
 INSERT INTO results VALUES ('P28', 'Neuer Abschluss aendert Empfehlungen; zurueckgerollt');
 
 SAVEPOINT finish_running;
 UPDATE lernpfad.enrollment SET completed_on = DATE '2027-01-22'
-WHERE learner_id = 3 AND course_id = 'SQL';
+WHERE learner_id = 3 AND course_id = 'PYTHON';
 SELECT pg_temp.check_result('P29',
-    (SELECT sum(hours) = 48 FROM lernpfad.missing_prerequisites('PROJ', 3)),
-    'Abschluss der laufenden Belegung senkt fehlende Stunden von 56 auf 48');
+    (SELECT sum(hours) = 26 FROM lernpfad.missing_prerequisites('ML', 3)),
+    'Abschluss der laufenden Belegung senkt fehlende Stunden von 34 auf 26');
 ROLLBACK TO SAVEPOINT finish_running;
 INSERT INTO results VALUES ('P29', 'Laufende Belegung abgeschlossen senkt fehlende Stunden; zurueckgerollt');
 
@@ -246,7 +246,7 @@ INSERT INTO results VALUES ('P29', 'Laufende Belegung abgeschlossen senkt fehlen
 -- -----------------------------------------------------------------------------
 SAVEPOINT schema_change;
 ALTER TABLE lernpfad.course ADD COLUMN description TEXT;
-UPDATE lernpfad.course SET description = 'Einstieg' WHERE course_id = 'EIN';
+UPDATE lernpfad.course SET description = 'Einstieg' WHERE course_id = 'BASICS';
 CREATE TABLE lernpfad.course_tag (
     course_id TEXT NOT NULL REFERENCES lernpfad.course (course_id),
     tag       TEXT NOT NULL,
@@ -272,8 +272,8 @@ INSERT INTO results VALUES ('P31', 'DROP TABLE und ALTER TABLE DROP COLUMN; zuru
 
 SELECT pg_temp.check_result('P32',
     (SELECT array_agg(course_id ORDER BY course_id) FROM lernpfad.eligible_courses(1))
-     = ARRAY['NOSQL', 'PY', 'STAT']
-    AND (SELECT count(*) = 8 FROM lernpfad.enrollment)
+     = ARRAY['ALGEBRA', 'DB_MODELING', 'PYTHON']
+    AND (SELECT count(*) = 7 FROM lernpfad.enrollment)
     AND NOT EXISTS (SELECT 1 FROM information_schema.columns
                     WHERE table_schema = 'lernpfad' AND table_name = 'course' AND column_name = 'description'),
     'Nach den Savepoints ist der Ausgangsstand wiederhergestellt');

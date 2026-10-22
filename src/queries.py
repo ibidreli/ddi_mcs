@@ -49,10 +49,10 @@ def run_cypher(session, query_id: str, timeout: float | None = None, **params) -
 # Aufruf: python -m src.queries
 #-----------------------------------------------------------------------------
 DEMO = [
-    ("A-001", {"course": "PROJ"}),
-    ("A-002", {"course": "PROJ"}),
+    ("A-001", {"course": "ML"}),
+    ("A-002", {"course": "ML"}),
     ("A-003", {"learner": 1}),
-    ("A-004", {"course": "PROJ", "learner": 1}),
+    ("A-004", {"course": "ML", "learner": 1}),
     ("A-005", {"learner": 1, "semester": "FS27", "location": 1}),
 ]
 

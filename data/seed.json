@@ -1,14 +1,29 @@
 {
   "courses": [
     {
-      "hours": 10,
-      "title": "Datenpipelines",
-      "course_id": "DE"
+      "hours": 6,
+      "title": "Lineare Algebra",
+      "course_id": "ALGEBRA"
+    },
+    {
+      "hours": 6,
+      "title": "Analysis",
+      "course_id": "ANALYSIS"
     },
     {
       "hours": 4,
-      "title": "Digitale Grundlagen",
-      "course_id": "EIN"
+      "title": "Grundlagen Data Science",
+      "course_id": "BASICS"
+    },
+    {
+      "hours": 6,
+      "title": "Datenbankmodellierung",
+      "course_id": "DB_MODELING"
+    },
+    {
+      "hours": 6,
+      "title": "Explorative Datenanalyse",
+      "course_id": "EDA"
     },
     {
       "hours": 10,
@@ -16,24 +31,14 @@
       "course_id": "ML"
     },
     {
-      "hours": 6,
-      "title": "Datenmodellierung",
-      "course_id": "MOD"
-    },
-    {
       "hours": 8,
-      "title": "NoSQL-Grundlagen",
+      "title": "NoSQL-Datenbanken",
       "course_id": "NOSQL"
-    },
-    {
-      "hours": 12,
-      "title": "Data-Science-Projekt",
-      "course_id": "PROJ"
     },
     {
       "hours": 8,
       "title": "Python-Grundlagen",
-      "course_id": "PY"
+      "course_id": "PYTHON"
     },
     {
       "hours": 8,
@@ -42,30 +47,25 @@
     },
     {
       "hours": 6,
-      "title": "Statistik-Grundlagen",
-      "course_id": "STAT"
-    },
-    {
-      "hours": 6,
       "title": "Datenvisualisierung",
-      "course_id": "VIS"
+      "course_id": "VISUALISATION"
     }
   ],
   "learners": [
     {
       "learner_id": 1,
       "study_mode": "VZ",
-      "display_name": "Lernende A"
+      "display_name": "Student A"
     },
     {
       "learner_id": 2,
       "study_mode": "TZ",
-      "display_name": "Lernende B"
+      "display_name": "Student B"
     },
     {
       "learner_id": 3,
       "study_mode": "VZ",
-      "display_name": "Lernende C"
+      "display_name": "Student C"
     }
   ],
   "lecturers": [
@@ -125,7 +125,7 @@
   "course_runs": [
     {
       "run_id": 1,
-      "course_id": "EIN",
+      "course_id": "BASICS",
       "study_mode": "VZ",
       "lecturer_id": 1,
       "location_id": 1,
@@ -133,7 +133,7 @@
     },
     {
       "run_id": 2,
-      "course_id": "EIN",
+      "course_id": "BASICS",
       "study_mode": "TZ",
       "lecturer_id": 1,
       "location_id": 2,
@@ -149,27 +149,27 @@
     },
     {
       "run_id": 4,
-      "course_id": "MOD",
-      "study_mode": "VZ",
-      "lecturer_id": 3,
-      "location_id": 1,
-      "semester_id": "FS26"
-    },
-    {
-      "run_id": 5,
-      "course_id": "PY",
+      "course_id": "PYTHON",
       "study_mode": "TZ",
       "lecturer_id": 4,
       "location_id": 2,
       "semester_id": "FS26"
     },
     {
-      "run_id": 6,
-      "course_id": "STAT",
+      "run_id": 5,
+      "course_id": "ALGEBRA",
       "study_mode": "TZ",
       "lecturer_id": 3,
       "location_id": 2,
       "semester_id": "FS26"
+    },
+    {
+      "run_id": 6,
+      "course_id": "PYTHON",
+      "study_mode": "VZ",
+      "lecturer_id": 4,
+      "location_id": 1,
+      "semester_id": "HS26"
     },
     {
       "run_id": 7,
@@ -181,55 +181,55 @@
     },
     {
       "run_id": 8,
-      "course_id": "PY",
-      "study_mode": "VZ",
-      "lecturer_id": 4,
-      "location_id": 1,
-      "semester_id": "HS26"
-    },
-    {
-      "run_id": 9,
-      "course_id": "STAT",
+      "course_id": "ALGEBRA",
       "study_mode": "TZ",
       "lecturer_id": 3,
       "location_id": 2,
       "semester_id": "HS26"
     },
     {
-      "run_id": 10,
-      "course_id": "NOSQL",
+      "run_id": 9,
+      "course_id": "PYTHON",
       "study_mode": "VZ",
-      "lecturer_id": 2,
+      "lecturer_id": 4,
+      "location_id": 1,
+      "semester_id": "FS27"
+    },
+    {
+      "run_id": 10,
+      "course_id": "ALGEBRA",
+      "study_mode": "VZ",
+      "lecturer_id": 3,
       "location_id": 1,
       "semester_id": "FS27"
     },
     {
       "run_id": 11,
-      "course_id": "NOSQL",
+      "course_id": "DB_MODELING",
+      "study_mode": "VZ",
+      "lecturer_id": 2,
+      "location_id": 1,
+      "semester_id": "FS27"
+    },
+    {
+      "run_id": 12,
+      "course_id": "ANALYSIS",
+      "study_mode": "TZ",
+      "lecturer_id": 3,
+      "location_id": 2,
+      "semester_id": "FS27"
+    },
+    {
+      "run_id": 13,
+      "course_id": "SQL",
       "study_mode": "TZ",
       "lecturer_id": 2,
       "location_id": 2,
       "semester_id": "FS27"
     },
     {
-      "run_id": 12,
-      "course_id": "PY",
-      "study_mode": "VZ",
-      "lecturer_id": 4,
-      "location_id": 1,
-      "semester_id": "FS27"
-    },
-    {
-      "run_id": 13,
-      "course_id": "STAT",
-      "study_mode": "VZ",
-      "lecturer_id": 3,
-      "location_id": 2,
-      "semester_id": "FS27"
-    },
-    {
       "run_id": 14,
-      "course_id": "DE",
+      "course_id": "EDA",
       "study_mode": "VZ",
       "lecturer_id": 1,
       "location_id": 1,
@@ -245,17 +245,17 @@
     },
     {
       "run_id": 16,
-      "course_id": "VIS",
+      "course_id": "NOSQL",
       "study_mode": "VZ",
-      "lecturer_id": 3,
+      "lecturer_id": 2,
       "location_id": 1,
       "semester_id": "FS27"
     },
     {
       "run_id": 17,
-      "course_id": "MOD",
+      "course_id": "DB_MODELING",
       "study_mode": "TZ",
-      "lecturer_id": 3,
+      "lecturer_id": 2,
       "location_id": 2,
       "semester_id": "FS27"
     }
@@ -263,15 +263,9 @@
   "enrollments": [
     {
       "run_id": 1,
-      "course_id": "EIN",
+      "course_id": "BASICS",
       "learner_id": 1,
       "completed_on": "2026-01-20"
-    },
-    {
-      "run_id": 4,
-      "course_id": "MOD",
-      "learner_id": 1,
-      "completed_on": "2026-06-26"
     },
     {
       "run_id": 3,
@@ -280,92 +274,92 @@
       "completed_on": "2026-06-19"
     },
     {
-      "run_id": 2,
-      "course_id": "EIN",
-      "learner_id": 2,
-      "completed_on": "2026-01-20"
-    },
-    {
       "run_id": 5,
-      "course_id": "PY",
-      "learner_id": 2,
-      "completed_on": "2026-06-19"
-    },
-    {
-      "run_id": 6,
-      "course_id": "STAT",
+      "course_id": "ALGEBRA",
       "learner_id": 2,
       "completed_on": "2026-06-26"
     },
     {
+      "run_id": 2,
+      "course_id": "BASICS",
+      "learner_id": 2,
+      "completed_on": "2026-01-20"
+    },
+    {
+      "run_id": 4,
+      "course_id": "PYTHON",
+      "learner_id": 2,
+      "completed_on": "2026-06-19"
+    },
+    {
       "run_id": 1,
-      "course_id": "EIN",
+      "course_id": "BASICS",
       "learner_id": 3,
       "completed_on": "2026-01-20"
     },
     {
-      "run_id": 7,
-      "course_id": "SQL",
+      "run_id": 6,
+      "course_id": "PYTHON",
       "learner_id": 3,
       "completed_on": null
     }
   ],
   "prerequisites": [
     {
-      "course_id": "DE",
-      "required_course_id": "PY"
+      "course_id": "ALGEBRA",
+      "required_course_id": "BASICS"
     },
     {
-      "course_id": "DE",
+      "course_id": "ANALYSIS",
+      "required_course_id": "ALGEBRA"
+    },
+    {
+      "course_id": "DB_MODELING",
+      "required_course_id": "SQL"
+    },
+    {
+      "course_id": "EDA",
+      "required_course_id": "PYTHON"
+    },
+    {
+      "course_id": "EDA",
       "required_course_id": "SQL"
     },
     {
       "course_id": "ML",
-      "required_course_id": "PY"
+      "required_course_id": "ALGEBRA"
     },
     {
       "course_id": "ML",
-      "required_course_id": "STAT"
+      "required_course_id": "ANALYSIS"
     },
     {
-      "course_id": "MOD",
-      "required_course_id": "EIN"
+      "course_id": "ML",
+      "required_course_id": "EDA"
+    },
+    {
+      "course_id": "ML",
+      "required_course_id": "PYTHON"
     },
     {
       "course_id": "NOSQL",
-      "required_course_id": "MOD"
+      "required_course_id": "DB_MODELING"
     },
     {
       "course_id": "NOSQL",
       "required_course_id": "SQL"
     },
     {
-      "course_id": "PROJ",
-      "required_course_id": "DE"
-    },
-    {
-      "course_id": "PROJ",
-      "required_course_id": "ML"
-    },
-    {
-      "course_id": "PROJ",
-      "required_course_id": "NOSQL"
-    },
-    {
-      "course_id": "PY",
-      "required_course_id": "EIN"
+      "course_id": "PYTHON",
+      "required_course_id": "BASICS"
     },
     {
       "course_id": "SQL",
-      "required_course_id": "EIN"
+      "required_course_id": "BASICS"
     },
     {
-      "course_id": "STAT",
-      "required_course_id": "EIN"
-    },
-    {
-      "course_id": "VIS",
-      "required_course_id": "PY"
+      "course_id": "VISUALISATION",
+      "required_course_id": "EDA"
     }
   ],
   "dataset_version": "synthetic-v2"

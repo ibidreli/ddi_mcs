@@ -68,11 +68,11 @@ def test_a005(dbs, learner, semester, location):
 #-----------------------------------------------------------------------------
 def test_expected_values(dbs):
     _, session = dbs
-    assert [r[0] for r in run_cypher(session, "A-004", course="PROJ", learner=1)] == \
-        ["DE", "ML", "NOSQL", "PY", "STAT"]
-    assert tuple(run_cypher(session, "A-004-summe", course="PROJ", learner=1)[0]) == (5, 42)
+    assert [r[0] for r in run_cypher(session, "A-004", course="ML", learner=1)] == \
+        ["ALGEBRA", "ANALYSIS", "EDA", "PYTHON"]
+    assert tuple(run_cypher(session, "A-004-summe", course="ML", learner=1)[0]) == (4, 26)
     assert [(r[0], r[1]) for r in run_cypher(session, "A-005", learner=1, semester="FS27", location=1)] == \
-        [(10, "NOSQL"), (12, "PY")]
+        [(10, "ALGEBRA"), (11, "DB_MODELING"), (9, "PYTHON")]
 
 
 def test_neo4j_counts(dbs):
@@ -82,10 +82,10 @@ def test_neo4j_counts(dbs):
                       "Learner": 3, "Run": 17}
     rels = dict(session.run("MATCH ()-[r]->() RETURN type(r) AS t, count(*) AS n").values())
     assert rels == {"REQUIRES": 14, "OF": 17, "IN": 17, "AT": 17, "TEACHES": 17,
-                    "ENROLLED": 8, "COMPLETED": 7}
+                    "ENROLLED": 7, "COMPLETED": 6}
 
 
 def test_neo4j_rejects_duplicate_course(dbs):
     _, session = dbs
     with pytest.raises(ConstraintError):
-        session.run("CREATE (:Course {id: 'PROJ', title: 'Doppelt', hours: 1})").consume()
+        session.run("CREATE (:Course {id: 'ML', title: 'Doppelt', hours: 1})").consume()

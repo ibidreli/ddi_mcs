@@ -8,11 +8,11 @@ Ein Weiterbildungsanbieter will Lernenden zeigen, welche Kurse sie als Nächstes
 
 | ID | Frage |
 |---|---|
-| A-001 | Welche Kurse setzt ein Zielkurs direkt voraus? |
-| A-002 | Welche Kurse setzt ein Zielkurs insgesamt voraus, über alle Stufen und ohne Duplikate? |
-| A-003 | Welche Kurse darf eine Person als Nächstes belegen? |
-| A-004 | Welche Vorkurse fehlen einer Person für einen Zielkurs, und wie viele Stunden sind das? |
-| A-005 | Welche Durchführungen dieser Kurse finden in einem Semester an einem Standort in der Studienform der Person statt, und wer unterrichtet sie? |
+| A-001 | Welche Kurse braucht man direkt, bevor man einen bestimmten Kurs besuchen darf? |
+| A-002 | Welche Kurse braucht man insgesamt für einen Kurs, also auch die Vorkurse der Vorkurse? Jeder Kurs wird nur einmal genannt |
+| A-003 | Welche Kurse kann eine Person jetzt neu beginnen, weil sie alle nötigen Vorkurse bestanden hat und den Kurs noch nicht besucht? |
+| A-004 | Was fehlt einer Person noch bis zu ihrem Zielkurs, und wie viele Stunden sind das? Ein Kurs, den sie gerade besucht, zählt noch als fehlend |
+| A-005 | Wo und bei wem kann eine Person ihre nächsten Kurse aus A-003 in einem bestimmten Semester besuchen, passend zu ihrem Standort und ihrer Studienform (Voll- oder Teilzeit)? |
 
 **Regeln**
 - **UND-Bedingung:** Alle Voraussetzungen eines Kurses gelten gemeinsam

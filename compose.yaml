@@ -1,0 +1,46 @@
+# compose.yaml
+# Zweck: PostgreSQL (LE2) und Neo4j (LE3) als lokale Container fuer die MC3
+# Bewusste Demo-Passwoerter fuer isolierte Uebungsdatenbanken, Ports nur auf 127.0.0.1
+name: ddi-mc3
+
+services:
+  db:
+    image: postgres:18.6-alpine@sha256:77f585114c32fbca283dc835b0596f4e52b51b4c6662d7810b2f4084f60a1873
+    environment:
+      POSTGRES_DB: lernpfad
+      POSTGRES_USER: ddi
+      POSTGRES_PASSWORD: ddi_lokal_demo
+      PGCLIENTENCODING: UTF8
+    ports:
+      - "127.0.0.1:55432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql
+      - ./le2-sql:/work/le2-sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ddi -d lernpfad"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  neo4j:
+    image: neo4j:5.26.0-community
+    environment:
+      NEO4J_AUTH: neo4j/ddi_lokal_demo
+      NEO4J_server_memory_heap_initial__size: 1G
+      NEO4J_server_memory_heap_max__size: 1G
+      NEO4J_server_memory_pagecache_size: 512M
+    ports:
+      - "127.0.0.1:7474:7474"   # Neo4j Browser
+      - "127.0.0.1:7687:7687"   # Bolt fuer Python
+    volumes:
+      - neo4j_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "cypher-shell -u neo4j -p ddi_lokal_demo 'RETURN 1' > /dev/null 2>&1 || exit 1"]
+      interval: 5s
+      timeout: 10s
+      retries: 40
+      start_period: 20s
+
+volumes:
+  pg_data:
+  neo4j_data:

@@ -10,7 +10,7 @@ from src.db import neo4j_driver, pg_connect, read_cypher_blocks
 
 # Spalten in der Reihenfolge der Tabellen in schema.sql
 PG_COLUMNS = {
-    "semesters": ("semester", ("semester_id", "starts_on", "ends_on")),
+    "semesters": ("semester", ("semester_id", "name", "starts_on", "ends_on")),
     "locations": ("location", ("location_id", "name")),
     "lecturers": ("lecturer", ("lecturer_id", "display_name")),
     "courses": ("course", ("course_id", "title", "hours")),
@@ -18,7 +18,7 @@ PG_COLUMNS = {
     "prerequisites": ("prerequisite", ("course_id", "required_course_id")),
     "course_runs": ("course_run", ("run_id", "course_id", "semester_id", "location_id",
                                    "lecturer_id", "study_mode")),
-    "enrollments": ("enrollment", ("learner_id", "course_id", "run_id", "completed_on")),
+    "completions": ("completion", ("learner_id", "course_id", "run_id", "completed_on")),
 }
 
 
@@ -60,8 +60,6 @@ def load_neo4j(data: dict, driver=None) -> None:
                 for start in range(0, len(rows), config.IMPORT_BATCH):
                     batch = rows[start:start + config.IMPORT_BATCH]
                     session.run(blocks[key], rows=batch).consume()
-                    if key == "enrollments":
-                        session.run(blocks["completions"], rows=batch).consume()
     finally:
         if own:
             driver.close()

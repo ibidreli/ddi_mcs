@@ -102,24 +102,66 @@
   ],
   "semesters": [
     {
+      "name": "Frühlingssemester 2026",
       "ends_on": "2026-07-31",
       "starts_on": "2026-02-16",
       "semester_id": "FS26"
     },
     {
+      "name": "Frühlingssemester 2027",
       "ends_on": "2027-07-31",
       "starts_on": "2027-02-15",
       "semester_id": "FS27"
     },
     {
+      "name": "Herbstsemester 2025",
       "ends_on": "2026-01-31",
       "starts_on": "2025-09-15",
       "semester_id": "HS25"
     },
     {
+      "name": "Herbstsemester 2026",
       "ends_on": "2027-01-31",
       "starts_on": "2026-09-14",
       "semester_id": "HS26"
+    }
+  ],
+  "completions": [
+    {
+      "run_id": 1,
+      "course_id": "BASICS",
+      "learner_id": 1,
+      "completed_on": "2026-01-20"
+    },
+    {
+      "run_id": 3,
+      "course_id": "SQL",
+      "learner_id": 1,
+      "completed_on": "2026-06-19"
+    },
+    {
+      "run_id": 5,
+      "course_id": "ALGEBRA",
+      "learner_id": 2,
+      "completed_on": "2026-06-26"
+    },
+    {
+      "run_id": 2,
+      "course_id": "BASICS",
+      "learner_id": 2,
+      "completed_on": "2026-01-20"
+    },
+    {
+      "run_id": 4,
+      "course_id": "PYTHON",
+      "learner_id": 2,
+      "completed_on": "2026-06-19"
+    },
+    {
+      "run_id": 1,
+      "course_id": "BASICS",
+      "learner_id": 3,
+      "completed_on": "2026-01-20"
     }
   ],
   "course_runs": [
@@ -258,50 +300,6 @@
       "lecturer_id": 2,
       "location_id": 2,
       "semester_id": "FS27"
-    }
-  ],
-  "enrollments": [
-    {
-      "run_id": 1,
-      "course_id": "BASICS",
-      "learner_id": 1,
-      "completed_on": "2026-01-20"
-    },
-    {
-      "run_id": 3,
-      "course_id": "SQL",
-      "learner_id": 1,
-      "completed_on": "2026-06-19"
-    },
-    {
-      "run_id": 5,
-      "course_id": "ALGEBRA",
-      "learner_id": 2,
-      "completed_on": "2026-06-26"
-    },
-    {
-      "run_id": 2,
-      "course_id": "BASICS",
-      "learner_id": 2,
-      "completed_on": "2026-01-20"
-    },
-    {
-      "run_id": 4,
-      "course_id": "PYTHON",
-      "learner_id": 2,
-      "completed_on": "2026-06-19"
-    },
-    {
-      "run_id": 1,
-      "course_id": "BASICS",
-      "learner_id": 3,
-      "completed_on": "2026-01-20"
-    },
-    {
-      "run_id": 6,
-      "course_id": "PYTHON",
-      "learner_id": 3,
-      "completed_on": null
     }
   ],
   "prerequisites": [

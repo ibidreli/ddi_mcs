@@ -16,7 +16,7 @@ SEED = dataset.read_json(config.SEED_JSON)
 COURSES = [c["course_id"] for c in SEED["courses"]]
 LEARNERS = [l["learner_id"] for l in SEED["learners"]] + [999]
 SEMESTERS = [s["semester_id"] for s in SEED["semesters"]]
-LOCATIONS = [o["location_id"] for o in SEED["locations"]]
+LECTURERS = [t["lecturer_id"] for t in SEED["lecturers"]]
 
 
 #-----------------------------------------------------------------------------
@@ -43,24 +43,24 @@ def test_a001(dbs, course):
     same(dbs, "A-001", course=course)
 
 
-@pytest.mark.parametrize("course", COURSES)
-def test_a002(dbs, course):
-    same(dbs, "A-002", course=course)
-
-
 @pytest.mark.parametrize("learner", LEARNERS)
-def test_a003(dbs, learner):
-    same(dbs, "A-003", learner=learner)
+def test_a002(dbs, learner):
+    same(dbs, "A-002", learner=learner)
 
 
 @pytest.mark.parametrize("course,learner", list(itertools.product(COURSES, LEARNERS)))
-def test_a004(dbs, course, learner):
-    same(dbs, "A-004", course=course, learner=learner)
+def test_a003(dbs, course, learner):
+    same(dbs, "A-003", course=course, learner=learner)
 
 
-@pytest.mark.parametrize("learner,semester,location", list(itertools.product(LEARNERS, SEMESTERS, LOCATIONS)))
-def test_a005(dbs, learner, semester, location):
-    same(dbs, "A-005", learner=learner, semester=semester, location=location)
+@pytest.mark.parametrize("learner,course,semester", list(itertools.product(LEARNERS, COURSES, SEMESTERS)))
+def test_a004(dbs, learner, course, semester):
+    same(dbs, "A-004", learner=learner, course=course, semester=semester)
+
+
+@pytest.mark.parametrize("lecturer,semester", list(itertools.product(LECTURERS, SEMESTERS)))
+def test_a005(dbs, lecturer, semester):
+    same(dbs, "A-005", lecturer=lecturer, semester=semester)
 
 
 #-----------------------------------------------------------------------------
@@ -68,11 +68,12 @@ def test_a005(dbs, learner, semester, location):
 #-----------------------------------------------------------------------------
 def test_expected_values(dbs):
     _, session = dbs
-    assert [r[0] for r in run_cypher(session, "A-004", course="ML", learner=1)] == \
+    assert [r[0] for r in run_cypher(session, "A-003", course="ML", learner=1)] == \
         ["ALGEBRA", "ANALYSIS", "EDA", "PYTHON"]
-    assert tuple(run_cypher(session, "A-004-summe", course="ML", learner=1)[0]) == (4, 26)
-    assert [(r[0], r[1]) for r in run_cypher(session, "A-005", learner=1, semester="FS27", location=1)] == \
-        [(10, "ALGEBRA"), (11, "DB_MODELING"), (9, "PYTHON")]
+    assert [tuple(r) for r in run_cypher(session, "A-004", learner=1, course="PYTHON", semester="FS27")] == \
+        [(9, "Brugg-Windisch", "T. Brunner")]
+    assert [r[1] for r in run_cypher(session, "A-005", lecturer=2, semester="FS27")] == \
+        ["DB_MODELING", "DB_MODELING", "NOSQL", "SQL"]
 
 
 def test_neo4j_counts(dbs):
@@ -82,7 +83,7 @@ def test_neo4j_counts(dbs):
                       "Learner": 3, "Run": 17}
     rels = dict(session.run("MATCH ()-[r]->() RETURN type(r) AS t, count(*) AS n").values())
     assert rels == {"REQUIRES": 14, "OF": 17, "IN": 17, "AT": 17, "TEACHES": 17,
-                    "ENROLLED": 7, "COMPLETED": 6}
+                    "ATTENDED": 6, "COMPLETED": 6}
 
 
 def test_neo4j_rejects_duplicate_course(dbs):

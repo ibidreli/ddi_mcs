@@ -49,5 +49,5 @@ EXTRA_EDGE_SHARE = 0.5      # Anteil Kurse mit zusaetzlichem Vorkurs aus tiefere
 WARMUP_RUNS = 5             # Aufwaermlaeufe, nicht gewertet
 MEASURED_RUNS = 20          # gewertete Laeufe pro Abfrage und Datenbank
 QUERY_TIMEOUT_S = 120       # Abbruch einzelner Abfragen
-BENCHMARK_QUERIES = ("A-002", "A-004")
+BENCHMARK_QUERIES = ("A-001", "A-003")
 IMPORT_BATCH = 5000         # Zeilen pro Neo4j-Importaufruf

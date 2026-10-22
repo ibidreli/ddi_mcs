@@ -9,7 +9,7 @@ from pathlib import Path
 from src import config
 
 TABLES = ("semesters", "locations", "lecturers", "courses", "learners",
-          "prerequisites", "course_runs", "enrollments")
+          "prerequisites", "course_runs", "completions")
 
 
 #-----------------------------------------------------------------------------
@@ -38,8 +38,8 @@ def course_id(layer: int, index: int) -> str:
 def generate(depth: int, width: int, seed: int = config.RANDOM_STATE) -> dict:
     rng = random.Random(seed * 1_000_003 + depth * 1_009 + width)
     semesters = [
-        {"semester_id": "HS25", "starts_on": "2025-09-15", "ends_on": "2026-01-31"},
-        {"semester_id": "FS26", "starts_on": "2026-02-16", "ends_on": "2026-07-31"},
+        {"semester_id": "HS25", "name": "Herbstsemester 2025", "starts_on": "2025-09-15", "ends_on": "2026-01-31"},
+        {"semester_id": "FS26", "name": "Frühlingssemester 2026", "starts_on": "2026-02-16", "ends_on": "2026-07-31"},
     ]
     locations = [{"location_id": 1, "name": "Brugg-Windisch"}, {"location_id": 2, "name": "Olten"}]
     lecturers = [{"lecturer_id": 1, "display_name": "L. Keller"}, {"lecturer_id": 2, "display_name": "M. Frei"}]
@@ -57,7 +57,7 @@ def generate(depth: int, width: int, seed: int = config.RANDOM_STATE) -> dict:
                 edges.add(course_id(rng.randrange(layer - 1), rng.randrange(width)))
             prerequisites += [{"course_id": cid, "required_course_id": e} for e in sorted(edges)]
 
-    # Eine Durchfuehrung pro Kurs im HS25 genuegt fuer A-002 und A-004.
+    # Eine Durchfuehrung pro Kurs im HS25 genuegt fuer A-001 und A-003.
     course_runs = [
         {"run_id": n + 1, "course_id": c["course_id"], "semester_id": "HS25",
          "location_id": 1, "lecturer_id": 1, "study_mode": "VZ"}
@@ -70,22 +70,22 @@ def generate(depth: int, width: int, seed: int = config.RANDOM_STATE) -> dict:
 
     # Person 1 hat die untere Haelfte der Stufen abgeschlossen, die anderen
     # Personen einen zufaelligen Teil der untersten Stufe.
-    enrollments = []
+    completions = []
     for c in courses:
         if int(c["course_id"][1:3]) < depth // 2:
-            enrollments.append({"learner_id": 1, "course_id": c["course_id"],
+            completions.append({"learner_id": 1, "course_id": c["course_id"],
                                 "run_id": run_of[c["course_id"]], "completed_on": "2026-01-20"})
     for learner in range(2, config.LEARNERS + 1):
         for i in rng.sample(range(width), k=max(1, width // 4)):
             cid = course_id(0, i)
-            enrollments.append({"learner_id": learner, "course_id": cid,
+            completions.append({"learner_id": learner, "course_id": cid,
                                 "run_id": run_of[cid], "completed_on": "2026-01-20"})
 
     return {
         "dataset_version": f"benchmark-d{depth}-w{width}",
         "semesters": semesters, "locations": locations, "lecturers": lecturers,
         "courses": courses, "learners": learners, "prerequisites": prerequisites,
-        "course_runs": course_runs, "enrollments": enrollments,
+        "course_runs": course_runs, "completions": completions,
     }
 
 

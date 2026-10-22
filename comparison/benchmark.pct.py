@@ -15,7 +15,7 @@
 # # **Auswertung der Messung**
 #
 # Wertet `comparison/results/benchmark.csv` aus, die `.\start.ps1 -Aktion Messen` erzeugt.
-# Gemessen werden A-002 und A-004 in PostgreSQL und Neo4j, jeweils inklusive Ergebnisübertragung.
+# Gemessen werden A-001 und A-003 in PostgreSQL und Neo4j, jeweils inklusive Ergebnisübertragung.
 # LE2, LE3.
 
 # %% [markdown]

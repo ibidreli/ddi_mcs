@@ -1,0 +1,6 @@
+.venv/
+__pycache__/
+.pytest_cache/
+*.ipynb
+.ipynb_checkpoints/
+comparison/results/benchmark-quick.csv

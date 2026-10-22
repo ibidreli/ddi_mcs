@@ -6,13 +6,13 @@ Mini-Challenge 3, ddi HS 2026 · Elias Pulver, Rodrigo Urech · Stand **22.10.20
 
 Ein Weiterbildungsanbieter will Lernenden zeigen, welche Kurse sie als Nächstes besuchen können, was ihnen für ein Ziel noch fehlt und wann und wo die passenden Kurse stattfinden. Viele Kurse setzen andere voraus, oft über mehrere Stufen. Ein Kurs wird mehrmals durchgeführt, jeweils in einem Semester, an einem Standort, mit einer Lehrperson und in Vollzeit oder Teilzeit.
 
-| ID | Frage |
-|---|---|
-| A-001 | Welche Kurse setzt ein Zielkurs direkt voraus? |
-| A-002 | Welche Kurse setzt ein Zielkurs insgesamt voraus, über alle Stufen und ohne Duplikate? |
-| A-003 | Welche Kurse darf eine Person jetzt belegen? |
-| A-004 | Welche Vorkurse fehlen einer Person für einen Zielkurs, und wie viele Stunden sind das? |
-| A-005 | Welche Durchführungen dieser Kurse finden in einem Semester an einem Standort in der Studienform der Person statt? |
+| ID | Frage | Beteiligte Entitäten |
+|---|---|---|
+| A-001 | Welche Kurse setzt ein Zielkurs direkt voraus? | Kurs |
+| A-002 | Welche Kurse setzt ein Zielkurs insgesamt voraus, über alle Stufen und ohne Duplikate? | Kurs |
+| A-003 | Welche Kurse darf eine Person als Nächstes belegen, weil sie alle Vorkurse abgeschlossen und den Kurs selbst noch nicht belegt hat? | Lernende Person, Durchführung, Kurs |
+| A-004 | Welche Vorkurse fehlen einer Person für einen Zielkurs, und wie viele Stunden sind das? Laufende Belegungen zählen als fehlend | Lernende Person, Durchführung, Kurs |
+| A-005 | Welche Durchführungen der Kurse aus A-003 finden in einem Semester an einem Standort in der Studienform der Person statt, und wer unterrichtet sie? | alle sechs |
 
 - **Graphstruktur:** A-002 bis A-005 folgen den Voraussetzungen über eine unbekannte Anzahl Stufen
 - **Relational nicht trivial:** sechs Entitäten, eine Selbstbeziehung auf Kurs und ein zusammengesetzter Fremdschlüssel

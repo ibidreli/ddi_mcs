@@ -23,14 +23,15 @@ ENVIRONMENT_JSON = RESULTS_DIR / "environment.json"
 #-----------------------------------------------------------------------------
 # Verbindungen (lokale Docker-Container, bewusst einfache Demo-Passwoerter)
 #-----------------------------------------------------------------------------
-PG_HOST = os.environ.get("DDI_PG_HOST", "localhost")
+# 127.0.0.1 statt localhost: Windows versucht sonst zuerst IPv6 (::1) und wartet
+PG_HOST = os.environ.get("DDI_PG_HOST", "127.0.0.1")
 PG_PORT = int(os.environ.get("DDI_PG_PORT", "55432"))
 PG_USER = os.environ.get("DDI_PG_USER", "ddi")
 PG_PASSWORD = os.environ.get("DDI_PG_PASSWORD", "ddi_lokal_demo")
 PG_DB_SEED = "lernpfad"
 PG_DB_BENCHMARK = "benchmark"
 
-NEO4J_URI = os.environ.get("DDI_NEO4J_URI", "bolt://localhost:7687")
+NEO4J_URI = os.environ.get("DDI_NEO4J_URI", "bolt://127.0.0.1:7687")
 NEO4J_USER = "neo4j"
 NEO4J_PASSWORD = os.environ.get("DDI_NEO4J_PASSWORD", "ddi_lokal_demo")
 

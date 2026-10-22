@@ -10,7 +10,7 @@ Lernpfadplanung mit PostgreSQL (LE2) und Neo4j (LE3) im Vergleich. Der Bericht i
 | `tests/` | `pytest`: Generator, Dateiimport, K1 Korrektheit |
 | `comparison/` | Messung und Auswertung, siehe `comparison/README.md` |
 | `data/seed.json` | Export des Beispielbestands `synthetic-v2` |
-| `docs/` | Bericht als Word-Dokument, Review-Meetings |
+| `docs/` | Bericht als Word-Dokument, Zusammenfassung in `summary.md` |
 
 ## **Starten**
 

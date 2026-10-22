@@ -1,5 +1,5 @@
 """benchmark.py
-Zweck: Messung K1 bis K3 fuer A-002 und A-004 mit erzeugten Datensaetzen.
+Zweck: Messung K1 bis K3 fuer A-001 und A-003 mit erzeugten Datensaetzen.
 LE2, LE3. Aufruf: python -m src.benchmark [--schnell]
 
 Ablauf pro Szenario
@@ -69,7 +69,7 @@ def measure(series, depth, width, conn, driver, session, writer, runs, warmup) -
     load_neo4j(data, driver=driver)
 
     target = dataset.target_course(depth)
-    params = {"A-002": {"course": target}, "A-004": {"course": target, "learner": 1}}
+    params = {"A-001": {"course": target}, "A-003": {"course": target, "learner": 1}}
     scenario = f"{series}-d{depth}-w{width}"
     base = {"series": series, "scenario": scenario, "depth": depth, "width": width,
             "courses": len(data["courses"]), "prerequisites": len(data["prerequisites"])}

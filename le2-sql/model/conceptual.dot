@@ -18,9 +18,9 @@ graph conceptual {
   lehr     [label="Lehrperson",      pos="560,40!"];
   person   [label="Lernende Person", pos="140,470!"];
 
-  // Assoziative Entitaet "belegt" (Raute im Rechteck)
-  belegt_box [shape=box, label="", fillcolor="white", width=1.5, height=0.75, pos="300,380!"];
-  belegt     [shape=diamond, label="belegt", fillcolor="#8cc63f", width=1.35, height=0.65, pos="300,380!"];
+  // Assoziative Entitaet "schliesst ab" (Raute im Rechteck)
+  belegt_box [shape=box, label="", fillcolor="white", width=2.05, height=0.8, pos="300,380!"];
+  belegt     [shape=diamond, label="schliesst ab", fillcolor="#8cc63f", width=1.55, height=0.65, pos="300,380!"];
 
   // Beziehungstypen
   node [shape=diamond, fillcolor="#8cc63f", width=1.55, height=0.65];
@@ -37,7 +37,8 @@ graph conceptual {
   k_std   [label="Stunden",         pos="720,420!"];
   d_nr    [label=<<U>Nr</U>>,       pos="700,175!"];
   d_form  [label="Studienform",     pos="700,325!"];
-  s_id    [label=<<U>Semester-ID</U>>, pos="110,190!"];
+  s_id    [label=<<U>Semester-ID</U>>, pos="100,200!"];
+  s_name  [label="Name", pos="100,300!"];
   s_beg   [label="Beginn",          pos="230,175!"];
   s_end   [label="Ende",            pos="340,175!"];
   o_id    [label=<<U>ID</U>>,       pos="890,330!"];
@@ -47,11 +48,11 @@ graph conceptual {
   p_id    [label=<<U>ID</U>>,       pos="40,540!"];
   p_name  [label="Anzeigename",     pos="150,560!"];
   p_form  [label="Studienform",     pos="270,540!"];
-  b_dat   [label="Abschlussdatum\n(leer = läuft)", pos="130,330!"];
+  b_dat   [label="Abschlussdatum", pos="130,330!"];
 
   kurs -- k_code; kurs -- k_titel; kurs -- k_std;
   durch -- d_nr; durch -- d_form;
-  semester -- s_id; semester -- s_beg; semester -- s_end;
+  semester -- s_id; semester -- s_name; semester -- s_beg; semester -- s_end;
   standort -- o_id; standort -- o_name;
   lehr -- l_id; lehr -- l_name;
   person -- p_id; person -- p_name; person -- p_form;

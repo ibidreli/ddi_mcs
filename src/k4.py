@@ -9,10 +9,11 @@ from src import config
 from src.db import read_cypher_blocks
 
 SQL_FUNCTIONS = {
-    "A-002": ["all_prerequisites"],
-    "A-003": ["eligible_courses", "all_prerequisites"],
-    "A-004": ["missing_prerequisites", "all_prerequisites"],
-    "A-005": ["available_runs", "eligible_courses", "all_prerequisites"],
+    "A-001": ["all_prerequisites"],
+    "A-002": ["eligible_courses", "all_prerequisites"],
+    "A-003": ["missing_prerequisites", "all_prerequisites"],
+    "A-004": ["course_offers", "eligible_courses", "all_prerequisites"],
+    "A-005": ["lecturer_courses"],
 }
 SQL_CLAUSES = r"\b(SELECT|FROM|JOIN|WHERE|UNION|WITH RECURSIVE|EXISTS|ORDER BY|GROUP BY)\b"
 CYPHER_CLAUSES = r"\b(MATCH|WHERE|WITH|EXISTS|RETURN|ORDER BY)\b"

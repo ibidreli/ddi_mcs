@@ -1,17 +1,48 @@
-# DDI – Mini-Challenge 3
+# **DDI – Mini-Challenge 3**
 
-[LE2_DRAFT.md](LE2_DRAFT.md) ist die zentrale Datei für Bericht, Modelle, Quellen, Bewertungsabdeckung und Arbeitsplan.
+Lernpfadplanung mit PostgreSQL (LE2) und Neo4j (LE3) im Vergleich. Der Bericht ist `docs/MC3_Bericht_Pulver_Urech.docx`.
 
-Docker Desktop starten und im Projektordner ausführen:
+| Ordner oder Datei | Inhalt |
+|---|---|
+| `le2-sql/` | PostgreSQL, siehe `le2-sql/README.md` |
+| `le3-nosql/` | Neo4j, siehe `le3-nosql/README.md` |
+| `src/` | Export, Import, Abfragen beider Datenbanken, Messung, K4 |
+| `tests/` | `pytest`: Generator, Dateiimport, K1 Korrektheit |
+| `comparison/` | Messung und Auswertung, siehe `comparison/README.md` |
+| `data/seed.json` | Export des Beispielbestands `synthetic-v2` |
+| `docs/` | Bericht als Word-Dokument, Zusammenfassung in `summary.md` |
+
+## **Starten**
+
+Voraussetzungen sind Docker Desktop und Python ab 3.10. Im Projektordner:
 
 ```powershell
-.\le2\start.ps1
+.\start.ps1
 ```
 
-Der Start zeigt Datenbankaufbau, vier Abfragen und 25 Prüfungen direkt im Terminal. Er erzeugt keine weiteren Projektdateien.
+Der Start baut beide Datenbanken auf, legt `.venv` an, exportiert `data/seed.json`, lädt Neo4j, führt `tests.sql` und `pytest` aus und zeigt A-001 bis A-005 in beiden Datenbanken.
 
-Weitere Aktionen mit demselben Befehl: `-Aktion Shell` öffnet SQL, `-Aktion Export` erzeugt bei Bedarf den JSON-Datenstand für LE3, `-Aktion Stop` stoppt den Container und erhält die Daten.
+| Aktion | Wirkung |
+|---|---|
+| `.\start.ps1 -Aktion Pruefen` | `tests.sql` und `pytest` erneut ausführen |
+| `.\start.ps1 -Aktion Abfragen` | `queries.sql` und Vergleich beider Datenbanken |
+| `.\start.ps1 -Aktion Messen` | Messung K1 bis K3, schreibt `comparison/results/benchmark.csv` |
+| `.\start.ps1 -Aktion Shell` | `psql` in der Datenbank `lernpfad` |
+| `.\start.ps1 -Aktion Cypher` | `cypher-shell` in Neo4j |
+| `.\start.ps1 -Aktion Stop` | Container stoppen, Daten bleiben erhalten |
 
-`le2/` enthält die ausführbaren Dateien. `context/` enthält die benötigten MC3-Quellen.
+Neo4j Browser: <http://localhost:7474> mit `neo4j` / `ddi_lokal_demo`. PostgreSQL ist für DBeaver oder pgAdmin unter `localhost:55432` erreichbar (`ddi` / `ddi_lokal_demo`).
 
-**Arbeitsziel:** Alle Pflichtkriterien mit einem kleinen, nachvollziehbaren Beispiel abdecken. Die nächsten Schritte stehen im [Arbeitsplan](LE2_DRAFT.md#14-arbeitsplan).
+## **Auswertung**
+
+Nach der Messung das Notebook erzeugen und in VS Code ausführen:
+
+```powershell
+.venv\Scripts\jupytext --sync comparison\benchmark.pct.py
+```
+
+K4 (Abfrageumfang) ohne Datenbank:
+
+```powershell
+.venv\Scripts\python -m src.k4
+```

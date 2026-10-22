@@ -7,22 +7,19 @@ from src.db import read_cypher_blocks
 
 #-----------------------------------------------------------------------------
 # SQL-Aufrufe
-# A-002 bis A-005 rufen die Funktionen aus schema.sql auf. COLLATE "C" sortiert
+# Alle Abfragen rufen die Funktionen aus schema.sql auf. COLLATE "C" sortiert
 # nach Zeichencode wie Neo4j, damit die Reihenfolge direkt vergleichbar ist.
 #-----------------------------------------------------------------------------
 SQL = {
-    "A-001": """SELECT c.course_id, c.title, c.hours
-                FROM lernpfad.prerequisite AS p
-                JOIN lernpfad.course AS c ON c.course_id = p.required_course_id
-                WHERE p.course_id = %(course)s
-                ORDER BY c.course_id COLLATE "C" """,
-    "A-002": """SELECT * FROM lernpfad.all_prerequisites(%(course)s)
+    "A-001": """SELECT * FROM lernpfad.all_prerequisites(%(course)s)
                 ORDER BY course_id COLLATE "C" """,
-    "A-003": """SELECT * FROM lernpfad.eligible_courses(%(learner)s)
+    "A-002": """SELECT * FROM lernpfad.eligible_courses(%(learner)s)
                 ORDER BY course_id COLLATE "C" """,
-    "A-004": """SELECT * FROM lernpfad.missing_prerequisites(%(course)s, %(learner)s)
+    "A-003": """SELECT * FROM lernpfad.missing_prerequisites(%(course)s, %(learner)s)
                 ORDER BY course_id COLLATE "C" """,
-    "A-005": """SELECT * FROM lernpfad.available_runs(%(learner)s, %(semester)s, %(location)s)
+    "A-004": """SELECT * FROM lernpfad.course_offers(%(learner)s, %(course)s, %(semester)s)
+                ORDER BY run_id""",
+    "A-005": """SELECT * FROM lernpfad.lecturer_courses(%(lecturer)s, %(semester)s)
                 ORDER BY course_id COLLATE "C", run_id""",
 }
 
@@ -49,11 +46,11 @@ def run_cypher(session, query_id: str, timeout: float | None = None, **params) -
 # Aufruf: python -m src.queries
 #-----------------------------------------------------------------------------
 DEMO = [
-    ("A-001", {"course": "PROJ"}),
-    ("A-002", {"course": "PROJ"}),
-    ("A-003", {"learner": 1}),
-    ("A-004", {"course": "PROJ", "learner": 1}),
-    ("A-005", {"learner": 1, "semester": "FS27", "location": 1}),
+    ("A-001", {"course": "ML"}),
+    ("A-002", {"learner": 1}),
+    ("A-003", {"course": "ML", "learner": 1}),
+    ("A-004", {"learner": 1, "course": "PYTHON", "semester": "FS27"}),
+    ("A-005", {"lecturer": 2, "semester": "FS27"}),
 ]
 
 if __name__ == "__main__":

@@ -36,8 +36,8 @@ def test_prerequisites_point_to_lower_layers():
         data["prerequisites"])
 
 
-def test_enrollments_reference_matching_runs():
+def test_completions_reference_matching_runs():
     data = dataset.generate(10, 20)
     run_course = {r["run_id"]: r["course_id"] for r in data["course_runs"]}
-    assert all(run_course[e["run_id"]] == e["course_id"] for e in data["enrollments"])
-    assert len({(e["learner_id"], e["course_id"]) for e in data["enrollments"]}) == len(data["enrollments"])
+    assert all(run_course[e["run_id"]] == e["course_id"] for e in data["completions"])
+    assert len({(e["learner_id"], e["course_id"]) for e in data["completions"]}) == len(data["completions"])

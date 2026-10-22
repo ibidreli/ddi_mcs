@@ -14,7 +14,7 @@ MATCH (n) DETACH DELETE n;
 // -----------------------------------------------------------------------------
 // name: semesters
 UNWIND $rows AS r
-CREATE (:Semester {id: r.semester_id, starts_on: date(r.starts_on), ends_on: date(r.ends_on)});
+CREATE (:Semester {id: r.semester_id, name: r.name, starts_on: date(r.starts_on), ends_on: date(r.ends_on)});
 
 // name: locations
 UNWIND $rows AS r
@@ -59,21 +59,15 @@ CREATE (run)-[:AT]->(o)
 CREATE (t)-[:TEACHES]->(run);
 
 // -----------------------------------------------------------------------------
-// Belegungen
-// ENROLLED haelt jede Belegung an der Durchfuehrung fest. Abgeschlossene
-// Belegungen erhalten zusaetzlich eine direkte Kante COMPLETED zum Kurs, weil
-// A-003 bis A-005 nach abgeschlossenen Kursen fragen, nicht nach Durchfuehrungen.
+// Abschluesse
+// ATTENDED haelt fest, in welcher Durchfuehrung ein Kurs abgeschlossen wurde.
+// COMPLETED fuehrt zusaetzlich direkt zum Kurs, weil A-002 bis A-004 nach
+// abgeschlossenen Kursen fragen, nicht nach Durchfuehrungen.
 // -----------------------------------------------------------------------------
-// name: enrollments
+// name: completions
 UNWIND $rows AS r
 MATCH (l:Learner {id: r.learner_id})
 MATCH (run:Run {id: r.run_id})
-CREATE (l)-[e:ENROLLED]->(run)
-SET e.completed_on = CASE WHEN r.completed_on IS NULL THEN NULL ELSE date(r.completed_on) END;
-
-// name: completions
-UNWIND $rows AS r
-WITH r WHERE r.completed_on IS NOT NULL
-MATCH (l:Learner {id: r.learner_id})
 MATCH (c:Course {id: r.course_id})
-CREATE (l)-[:COMPLETED {completed_on: date(r.completed_on), run_id: r.run_id}]->(c);
+CREATE (l)-[:ATTENDED {completed_on: date(r.completed_on)}]->(run)
+CREATE (l)-[:COMPLETED {completed_on: date(r.completed_on)}]->(c);

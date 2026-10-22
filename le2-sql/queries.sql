@@ -8,26 +8,20 @@
 -- -----------------------------------------------------------------------------
 -- A-001 bis A-005
 -- -----------------------------------------------------------------------------
-\echo 'A-001: direkte Voraussetzungen von PROJ'
-SELECT c.course_id, c.title
-FROM lernpfad.prerequisite AS p
-JOIN lernpfad.course AS c ON c.course_id = p.required_course_id
-WHERE p.course_id = 'PROJ'
-ORDER BY c.course_id;
+\echo 'A-001: Kurse, die ueber alle Stufen abgeschlossen sein muessen, um ML zu belegen'
+SELECT * FROM lernpfad.all_prerequisites('ML') ORDER BY course_id;
 
-\echo 'A-002: alle Voraussetzungen von PROJ ueber alle Stufen, ohne Duplikate'
-SELECT * FROM lernpfad.all_prerequisites('PROJ') ORDER BY course_id;
-
-\echo 'A-003: Kurse, die Person 1 jetzt belegen darf'
+\echo 'A-002: Kurse, die Student A laut Abschluessen als Naechstes belegen darf'
 SELECT * FROM lernpfad.eligible_courses(1) ORDER BY course_id;
 
-\echo 'A-004: fuer PROJ fehlende Vorkurse von Person 1'
-SELECT * FROM lernpfad.missing_prerequisites('PROJ', 1) ORDER BY course_id;
-SELECT count(*) AS missing_courses, coalesce(sum(hours), 0) AS missing_hours
-FROM lernpfad.missing_prerequisites('PROJ', 1);
+\echo 'A-003: Kurse, die Student A fuer ML noch fehlen'
+SELECT * FROM lernpfad.missing_prerequisites('ML', 1) ORDER BY course_id;
 
-\echo 'A-005: passende Durchfuehrungen fuer Person 1 in FS27 am Standort 1'
-SELECT * FROM lernpfad.available_runs(1, 'FS27', 1) ORDER BY course_id, run_id;
+\echo 'A-004: wo und bei wem Student A PYTHON im Fruehlingssemester 2027 besuchen kann'
+SELECT * FROM lernpfad.course_offers(1, 'PYTHON', 'FS27') ORDER BY run_id;
+
+\echo 'A-005: Kurse von M. Frei im Fruehlingssemester 2027'
+SELECT * FROM lernpfad.lecturer_courses(2, 'FS27') ORDER BY course_id, run_id;
 
 -- -----------------------------------------------------------------------------
 -- CRUD-Demo
@@ -39,9 +33,9 @@ VALUES ('DEMO', 'Nur fuer die Transaktionsdemo', 2)
 RETURNING *;
 UPDATE lernpfad.course SET hours = 3 WHERE course_id = 'DEMO' RETURNING *;
 DELETE FROM lernpfad.course WHERE course_id = 'DEMO' RETURNING *;
-INSERT INTO lernpfad.enrollment (learner_id, course_id, run_id, completed_on)
-VALUES (1, 'PY', 8, DATE '2026-12-18');
-\echo 'Mit Abschluss PY: DE und VIS kommen dazu, PY entfaellt'
+INSERT INTO lernpfad.completion (learner_id, course_id, run_id, completed_on)
+VALUES (1, 'PYTHON', 6, DATE '2027-01-22');
+\echo 'Mit Abschluss PYTHON: EDA kommt dazu, PYTHON entfaellt'
 SELECT * FROM lernpfad.eligible_courses(1) ORDER BY course_id;
 ROLLBACK;
 \echo 'Nach ROLLBACK gilt wieder der Ausgangsstand'
@@ -51,6 +45,6 @@ SELECT * FROM lernpfad.eligible_courses(1) ORDER BY course_id;
 -- Ausfuehrungsplan
 -- Zeigt Indexnutzung und Rekursion; ersetzt keine Messung.
 -- -----------------------------------------------------------------------------
-\echo 'Ausfuehrungsplan von A-002'
+\echo 'Ausfuehrungsplan von A-001'
 EXPLAIN (ANALYZE, BUFFERS, COSTS OFF)
-SELECT * FROM lernpfad.all_prerequisites('PROJ');
+SELECT * FROM lernpfad.all_prerequisites('ML');

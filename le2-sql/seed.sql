@@ -8,11 +8,11 @@ BEGIN;
 -- Stammdaten
 -- Reihenfolge folgt den Fremdschluesseln: zuerst referenzierte Tabellen.
 -- -----------------------------------------------------------------------------
-INSERT INTO lernpfad.semester (semester_id, starts_on, ends_on) VALUES
-    ('HS25', DATE '2025-09-15', DATE '2026-01-31'),
-    ('FS26', DATE '2026-02-16', DATE '2026-07-31'),
-    ('HS26', DATE '2026-09-14', DATE '2027-01-31'),
-    ('FS27', DATE '2027-02-15', DATE '2027-07-31');
+INSERT INTO lernpfad.semester (semester_id, name, starts_on, ends_on) VALUES
+    ('HS25', 'Herbstsemester 2025',   DATE '2025-09-15', DATE '2026-01-31'),
+    ('FS26', 'Frühlingssemester 2026', DATE '2026-02-16', DATE '2026-07-31'),
+    ('HS26', 'Herbstsemester 2026',   DATE '2026-09-14', DATE '2027-01-31'),
+    ('FS27', 'Frühlingssemester 2027', DATE '2027-02-15', DATE '2027-07-31');
 
 INSERT INTO lernpfad.location (location_id, name) VALUES
     (1, 'Brugg-Windisch'),
@@ -26,70 +26,69 @@ INSERT INTO lernpfad.lecturer (lecturer_id, display_name) VALUES
     (4, 'T. Brunner');
 
 INSERT INTO lernpfad.course (course_id, title, hours) VALUES
-    ('EIN',   'Digitale Grundlagen',  4),
-    ('SQL',   'SQL-Grundlagen',       8),
-    ('MOD',   'Datenmodellierung',    6),
-    ('PY',    'Python-Grundlagen',    8),
-    ('STAT',  'Statistik-Grundlagen', 6),
-    ('NOSQL', 'NoSQL-Grundlagen',     8),
-    ('ML',    'Machine Learning',    10),
-    ('DE',    'Datenpipelines',      10),
-    ('PROJ',  'Data-Science-Projekt', 12),
-    ('VIS',   'Datenvisualisierung',  6);
+    ('BASICS',        'Grundlagen Data Science',  4),
+    ('PYTHON',        'Python-Grundlagen',        8),
+    ('SQL',           'SQL-Grundlagen',           8),
+    ('ALGEBRA',       'Lineare Algebra',          6),
+    ('ANALYSIS',      'Analysis',                 6),
+    ('DB_MODELING',   'Datenbankmodellierung',    6),
+    ('NOSQL',         'NoSQL-Datenbanken',        8),
+    ('EDA',           'Explorative Datenanalyse', 6),
+    ('VISUALISATION', 'Datenvisualisierung',      6),
+    ('ML',            'Machine Learning',        10);
 
 INSERT INTO lernpfad.learner (learner_id, display_name, study_mode) VALUES
-    (1, 'Lernende A', 'VZ'),
-    (2, 'Lernende B', 'TZ'),
-    (3, 'Lernende C', 'VZ');
+    (1, 'Student A', 'VZ'),
+    (2, 'Student B', 'TZ'),
+    (3, 'Student C', 'VZ');
 
 -- -----------------------------------------------------------------------------
 -- Voraussetzungen
 -- Zielkurs -> Vorkurs, mehrere Zeilen pro Zielkurs gelten gemeinsam
 -- -----------------------------------------------------------------------------
 INSERT INTO lernpfad.prerequisite (course_id, required_course_id) VALUES
-    ('SQL', 'EIN'), ('MOD', 'EIN'), ('PY', 'EIN'), ('STAT', 'EIN'),
-    ('NOSQL', 'MOD'), ('NOSQL', 'SQL'),
-    ('ML', 'PY'), ('ML', 'STAT'),
-    ('DE', 'SQL'), ('DE', 'PY'),
-    ('PROJ', 'DE'), ('PROJ', 'ML'), ('PROJ', 'NOSQL'),
-    ('VIS', 'PY');
+    ('PYTHON', 'BASICS'), ('SQL', 'BASICS'), ('ALGEBRA', 'BASICS'),
+    ('ANALYSIS', 'ALGEBRA'),
+    ('DB_MODELING', 'SQL'),
+    ('NOSQL', 'DB_MODELING'), ('NOSQL', 'SQL'),
+    ('EDA', 'PYTHON'), ('EDA', 'SQL'),
+    ('VISUALISATION', 'EDA'),
+    ('ML', 'EDA'), ('ML', 'PYTHON'), ('ML', 'ALGEBRA'), ('ML', 'ANALYSIS');
 
 -- -----------------------------------------------------------------------------
 -- Durchfuehrungen
--- HS25 und FS26 abgeschlossen, HS26 laufend, FS27 Angebot fuer A-005
+-- HS25 und FS26 vergangen, HS26 laufend, FS27 Angebot fuer A-004 und A-005
 -- -----------------------------------------------------------------------------
 INSERT INTO lernpfad.course_run (run_id, course_id, semester_id, location_id, lecturer_id, study_mode) VALUES
-    ( 1, 'EIN',   'HS25', 1, 1, 'VZ'),
-    ( 2, 'EIN',   'HS25', 2, 1, 'TZ'),
-    ( 3, 'SQL',   'FS26', 1, 2, 'VZ'),
-    ( 4, 'MOD',   'FS26', 1, 3, 'VZ'),
-    ( 5, 'PY',    'FS26', 2, 4, 'TZ'),
-    ( 6, 'STAT',  'FS26', 2, 3, 'TZ'),
-    ( 7, 'SQL',   'HS26', 1, 2, 'VZ'),
-    ( 8, 'PY',    'HS26', 1, 4, 'VZ'),
-    ( 9, 'STAT',  'HS26', 2, 3, 'TZ'),
-    (10, 'NOSQL', 'FS27', 1, 2, 'VZ'),
-    (11, 'NOSQL', 'FS27', 2, 2, 'TZ'),
-    (12, 'PY',    'FS27', 1, 4, 'VZ'),
-    (13, 'STAT',  'FS27', 2, 3, 'VZ'),
-    (14, 'DE',    'FS27', 1, 1, 'VZ'),
-    (15, 'ML',    'FS27', 3, 4, 'VZ'),
-    (16, 'VIS',   'FS27', 1, 3, 'VZ'),
-    (17, 'MOD',   'FS27', 2, 3, 'TZ');
+    ( 1, 'BASICS',      'HS25', 1, 1, 'VZ'),
+    ( 2, 'BASICS',      'HS25', 2, 1, 'TZ'),
+    ( 3, 'SQL',         'FS26', 1, 2, 'VZ'),
+    ( 4, 'PYTHON',      'FS26', 2, 4, 'TZ'),
+    ( 5, 'ALGEBRA',     'FS26', 2, 3, 'TZ'),
+    ( 6, 'PYTHON',      'HS26', 1, 4, 'VZ'),
+    ( 7, 'SQL',         'HS26', 1, 2, 'VZ'),
+    ( 8, 'ALGEBRA',     'HS26', 2, 3, 'TZ'),
+    ( 9, 'PYTHON',      'FS27', 1, 4, 'VZ'),
+    (10, 'ALGEBRA',     'FS27', 1, 3, 'VZ'),
+    (11, 'DB_MODELING', 'FS27', 1, 2, 'VZ'),
+    (12, 'ANALYSIS',    'FS27', 2, 3, 'TZ'),
+    (13, 'SQL',         'FS27', 2, 2, 'TZ'),
+    (14, 'EDA',         'FS27', 1, 1, 'VZ'),
+    (15, 'ML',          'FS27', 3, 4, 'VZ'),
+    (16, 'NOSQL',       'FS27', 1, 2, 'VZ'),
+    (17, 'DB_MODELING', 'FS27', 2, 2, 'TZ');
 
 -- -----------------------------------------------------------------------------
--- Belegungen
--- completed_on NULL bedeutet laufend (Person 3 in SQL, HS26)
+-- Abschluesse
+-- Gespeichert wird nur, was abgeschlossen ist
 -- -----------------------------------------------------------------------------
-INSERT INTO lernpfad.enrollment (learner_id, course_id, run_id, completed_on) VALUES
-    (1, 'EIN',  1, DATE '2026-01-20'),
-    (1, 'SQL',  3, DATE '2026-06-19'),
-    (1, 'MOD',  4, DATE '2026-06-26'),
-    (2, 'EIN',  2, DATE '2026-01-20'),
-    (2, 'PY',   5, DATE '2026-06-19'),
-    (2, 'STAT', 6, DATE '2026-06-26'),
-    (3, 'EIN',  1, DATE '2026-01-20'),
-    (3, 'SQL',  7, NULL);
+INSERT INTO lernpfad.completion (learner_id, course_id, run_id, completed_on) VALUES
+    (1, 'BASICS',  1, DATE '2026-01-20'),
+    (1, 'SQL',     3, DATE '2026-06-19'),
+    (2, 'BASICS',  2, DATE '2026-01-20'),
+    (2, 'PYTHON',  4, DATE '2026-06-19'),
+    (2, 'ALGEBRA', 5, DATE '2026-06-26'),
+    (3, 'BASICS',  1, DATE '2026-01-20');
 
 COMMIT;
 
@@ -100,4 +99,4 @@ ANALYZE lernpfad.course;
 ANALYZE lernpfad.learner;
 ANALYZE lernpfad.prerequisite;
 ANALYZE lernpfad.course_run;
-ANALYZE lernpfad.enrollment;
+ANALYZE lernpfad.completion;

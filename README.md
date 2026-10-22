@@ -2,15 +2,15 @@
 
 Lernpfadplanung mit PostgreSQL (LE2) und Neo4j (LE3) im Vergleich. Der Bericht ist [docs/mc3-report.md](docs/mc3-report.md).
 
-| Ordner oder Datei | Inhalt | LE |
-|---|---|---|
-| `le2-sql/` | `schema.sql`, `seed.sql`, `queries.sql`, `tests.sql` und Modelle | LE2 |
-| `le3-nosql/` | `schema.cypher`, `import.cypher`, `queries.cypher` und Graphmodell | LE3 |
-| `src/` | Export, Import, Abfragen beider Datenbanken, Messung, K4 | LE2, LE3 |
-| `tests/` | `pytest`: Generator, Dateiimport, K1 Korrektheit | LE2, LE3 |
-| `comparison/` | Notebook zur Auswertung, Resultate in `results/` | LE2, LE3 |
-| `data/seed.json` | Export des Beispielbestands `synthetic-v2` | LE2, LE3 |
-| `docs/` | Bericht, Auftrag, Review-Meetings | |
+| Ordner oder Datei | Inhalt |
+|---|---|
+| `le2-sql/` | `schema.sql`, `seed.sql`, `queries.sql`, `tests.sql` und Modelle |
+| `le3-nosql/` | `schema.cypher`, `import.cypher`, `queries.cypher` und Graphmodell |
+| `src/` | Export, Import, Abfragen beider Datenbanken, Messung, K4 |
+| `tests/` | `pytest`: Generator, Dateiimport, K1 Korrektheit |
+| `comparison/` | Notebook zur Auswertung, Resultate in `results/` |
+| `data/seed.json` | Export des Beispielbestands `synthetic-v2` |
+| `docs/` | Bericht, Auftrag, Review-Meetings |
 
 ## **Starten**
 

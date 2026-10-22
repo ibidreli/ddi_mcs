@@ -102,6 +102,7 @@ try {
     Write-Host 'Neo4j Browser:  http://localhost:7474  (neo4j / ddi_lokal_demo)'
     Write-Host 'Weitere Aktionen: -Aktion Pruefen | Abfragen | Messen | Shell | Cypher | Stop'
 } catch {
-    Write-Error $_
+    Write-Host ''
+    Write-Host "FEHLER: $($_.Exception.Message)" -ForegroundColor Red
     exit 1
 }

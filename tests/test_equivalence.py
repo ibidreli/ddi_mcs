@@ -53,12 +53,12 @@ def test_a003(dbs, learner):
     same(dbs, "A-003", learner=learner)
 
 
-@pytest.mark.parametrize("course,learner", itertools.product(COURSES, LEARNERS))
+@pytest.mark.parametrize("course,learner", list(itertools.product(COURSES, LEARNERS)))
 def test_a004(dbs, course, learner):
     same(dbs, "A-004", course=course, learner=learner)
 
 
-@pytest.mark.parametrize("learner,semester,location", itertools.product(LEARNERS, SEMESTERS, LOCATIONS))
+@pytest.mark.parametrize("learner,semester,location", list(itertools.product(LEARNERS, SEMESTERS, LOCATIONS)))
 def test_a005(dbs, learner, semester, location):
     same(dbs, "A-005", learner=learner, semester=semester, location=location)
 

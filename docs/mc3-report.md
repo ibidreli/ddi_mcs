@@ -227,3 +227,86 @@ Die Cypher-Abfragen sind etwa **dreimal** kürzer, H2 trifft damit zu.
 
 - **Ursache:** Das Pfadmuster `-[:REQUIRES*1..]->` ersetzt die rekursive CTE mit Startteil, rekursivem Teil und Join auf `course`
 - **Grenze:** Kürzer heisst nicht automatisch verständlicher. Die SQL-Funktionen werden einmal geschrieben und in A-003 bis A-005 wiederverwendet
+
+### **7.3) Messresultate (K1 bis K3)**
+
+Gemessen wurde am **22.10.2026** auf einem Windows-11-Rechner mit Docker Desktop. PostgreSQL 18.6 und Neo4j 5.26.0 Community liefen gleichzeitig, der Client war Python 3.13.
+
+**Daten (benchmark):**
+- `course`: **100** bis **4'000** Kurse in acht Szenarien
+- `prerequisite`: **192** bis **8'803** Voraussetzungen
+- `enrollment`: Abschlüsse von Person 1 in der unteren Hälfte der Stufen
+
+| Reihe | Tiefe | Kurse | A-002 Zeilen | A-002 PostgreSQL | A-002 Neo4j | A-004 Zeilen | A-004 PostgreSQL | A-004 Neo4j |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Tiefe | 5 | 100 | 27 | 1.06 | 3.09 | 6 | 1.14 | 2.79 |
+| Tiefe | 10 | 200 | 111 | 1.28 | 4.51 | 27 | 1.31 | 4.09 |
+| Tiefe | 20 | 400 | 280 | 2.04 | 7.19 | 103 | 2.01 | 5.71 |
+| Tiefe | 40 | 800 | 636 | 3.13 | 12.35 | 270 | 3.02 | 10.73 |
+| Tiefe | 80 | 1'600 | 1'339 | 5.13 | 22.98 | 612 | 5.29 | 14.69 |
+| Breite | 10 | 200 | 111 | 1.43 | 3.55 | 27 | 1.43 | 2.35 |
+| Breite | 10 | 1'000 | 327 | 2.36 | 6.99 | 31 | 2.59 | 3.54 |
+| Breite | 10 | 4'000 | 690 | 3.34 | 12.69 | 30 | 3.16 | 4.86 |
+
+*Median aus 20 Läufen in ms, Zeit inklusive Ergebnisübertragung zum Client. Reihe Breite heisst Tiefe 10 mit wachsender Anzahl Kurse pro Stufe*
+
+![Messresultat K3](../comparison/results/benchmark-k3.png)
+
+*Abbildung 4 Median mit Interquartilsbereich bei wachsender Tiefe (links) und wachsender Anzahl Kurse (rechts)*
+
+#### **Erkenntnisse**
+
+Beide Datenbanken liefern in allen Szenarien dieselben Ergebnisse, und PostgreSQL ist überall schneller.
+
+**K1 Korrektheit**
+- In allen **8** Szenarien sind die Ergebnisse von A-002 und A-004 identisch, kein Lauf erreichte den Timeout
+
+**K2 Antwortzeit**
+- PostgreSQL ist bei A-002 **2.5** bis **4.5** Mal und bei A-004 **1.4** bis **3.6** Mal schneller
+- Der Interquartilsbereich liegt überall unter **2 ms**. Einzelne Ausreisser von Neo4j bis **48 ms** beeinflussen den Median nicht
+
+**K3 Skalierung**
+- Von Tiefe **5** auf **80** steigt A-002 in PostgreSQL von **1.06** auf **5.13 ms**, in Neo4j von **3.09** auf **22.98 ms**
+- Beide Zeiten wachsen ungefähr linear mit der Anzahl zurückgegebener Zeilen. Pro Zeile kommen in PostgreSQL etwa **0.003 ms**, in Neo4j etwa **0.015 ms** dazu
+- Bei A-004 mit **4'000** Kursen, aber nur **30** Ergebniszeilen, ist der Abstand am kleinsten (Faktor **1.5**)
+
+Die Unterschiede hängen stärker an der Grösse des Ergebnisses als an der Tiefe der Kette.
+
+## **8) Vergleich und Interpretation**
+
+Die Messung widerlegt unsere Erwartung an die Antwortzeit, bestätigt aber den Vorteil bei der Formulierung der Abfragen.
+
+| Hypothese | Ergebnis | Beleg |
+|---|---|---|
+| H1 Neo4j skaliert mit der Tiefe besser | nicht bestätigt | Der Faktor bei A-002 wächst von **2.9** (Tiefe 5) auf **4.5** (Tiefe 80) zugunsten von PostgreSQL |
+| H2 Cypher ist kürzer | bestätigt | Cypher braucht etwa einen Drittel der Zeilen und Klauseln |
+
+**Antwortzeit**
+- **Mengenverarbeitung:** Die rekursive CTE verarbeitet pro Stufe alle neu gefundenen Kurse gemeinsam in einem Join. A-002 erreicht bei Tiefe 80 **1'339** von **1'600** Kursen, die Abfrage liest also fast den ganzen Graphen. Hier ist mengenorientierte Verarbeitung im Vorteil gegenüber dem Folgen einzelner Kanten
+- **Datenmenge:** Mit höchstens **8'803** Voraussetzungen liegen alle Daten im Arbeitsspeicher. Der Vorteil gespeicherter Kanten in Neo4j zeigt sich vor allem, wenn eine Abfrage nur einen kleinen Teil eines grossen Graphen berührt
+- **Übertragung:** Die Zeit pro Ergebniszeile ist in Neo4j etwa fünfmal höher. Ob das am Server oder am Python-Treiber liegt, trennt unsere Messung nicht, weil sie die Zeit am Client misst
+
+**Weitere Kriterien**
+- **Abfragen:** Das Pfadmuster `-[:REQUIRES*1..]->` drückt die Kette direkt aus, die SQL-Funktionen brauchen Startteil, Rekursion und Joins
+- **Integrität:** PostgreSQL setzt Fremdschlüssel, Wertebereiche und die Regel „eine Belegung pro Kurs“ selbst durch. Neo4j Community prüft nur die Eindeutigkeit, der Rest hängt am Import
+
+**Grenzen**
+- Ein Rechner, Docker Desktop unter Windows, Standardeinstellungen beider Datenbanken
+- Erzeugte Graphen mit fester Struktur, nur lesende Abfragen, keine gleichzeitigen Zugriffe
+- Zeit am Client inklusive Treiber, keine getrennte Serverzeit
+
+Für diese Problemstellung und Datenmenge ist PostgreSQL die schnellere und strengere Lösung. Neo4j bildet die Kette natürlicher ab und erlaubt kürzere Abfragen. Ob Neo4j bei deutlich grösseren Graphen oder bei Abfragen wie dem kürzesten Lernpfad aufholt, wäre mit weiteren Messungen zu prüfen.
+
+## **9) Vorkenntnisse und Lernerfolg**
+
+### **9.1) Elias Pulver**
+
+- **Vorkenntnisse aus dem Beruf:** wird von Elias ergänzt
+- **Wichtigste Erkenntnis:** wird von Elias ergänzt
+- **Einflüsse auf den Lernerfolg:** wird von Elias ergänzt
+
+### **9.2) Rodrigo Urech**
+
+- **Vorkenntnisse aus dem Beruf:** wird von Rodrigo ergänzt
+- **Wichtigste Erkenntnis:** wird von Rodrigo ergänzt
+- **Einflüsse auf den Lernerfolg:** wird von Rodrigo ergänzt

@@ -1,7 +1,7 @@
 # ---
 # jupyter:
 #   jupytext:
-#     formats: ipynb,pct.py:percent
+#     formats: ipynb,.pct.py:percent
 #     text_representation:
 #       extension: .py
 #       format_name: percent

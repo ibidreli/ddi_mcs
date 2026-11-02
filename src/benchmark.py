@@ -6,7 +6,8 @@ Ablauf pro Szenario
 1. Datensatz erzeugen (fester Seed) und in beide Datenbanken laden
 2. K1: Ergebnisse beider Datenbanken vergleichen, bei Abweichung Abbruch
 3. Aufwaermlaeufe, danach gewertete Laeufe abwechselnd je Datenbank
-4. Zeit inklusive Ergebnisuebertragung zum Client messen
+4. Zeit inklusive Ergebnisuebertragung zum Client messen, bei Neo4j zusaetzlich
+   die Serverzeit ohne Uebertragung (server_ms)
 Am Ende wird der Beispielbestand wieder in Neo4j geladen.
 """
 import csv
@@ -20,10 +21,10 @@ from datetime import datetime
 from src import config, dataset
 from src.db import neo4j_driver, pg_connect
 from src.load import load_neo4j, load_postgres
-from src.queries import run_cypher, run_sql
+from src.queries import run_cypher_timed, run_sql
 
-FIELDS = ["series", "scenario", "depth", "width", "courses", "prerequisites", "result_rows",
-          "database", "query", "run", "ms", "status"]
+FIELDS = ["series", "scenario", "depth", "width", "courses", "prerequisites", "recursion_depth",
+          "result_rows", "database", "query", "run", "ms", "server_ms", "status"]
 
 
 def is_timeout(error: Exception) -> bool:
@@ -64,7 +65,8 @@ def environment(conn, session) -> dict:
 # Messung eines Szenarios
 #-----------------------------------------------------------------------------
 def measure(series, depth, width, conn, driver, session, writer, runs, warmup) -> None:
-    data = dataset.generate(depth, width)
+    share = config.EXTRA_EDGE_SHARE_CHAIN if series == "chain" else config.EXTRA_EDGE_SHARE
+    data = dataset.generate(depth, width, extra_edge_share=share)
     load_postgres(data)
     load_neo4j(data, driver=driver)
 
@@ -72,16 +74,18 @@ def measure(series, depth, width, conn, driver, session, writer, runs, warmup) -
     params = {"A-001": {"course": target}, "A-003": {"course": target, "learner": 1}}
     scenario = f"{series}-d{depth}-w{width}"
     base = {"series": series, "scenario": scenario, "depth": depth, "width": width,
-            "courses": len(data["courses"]), "prerequisites": len(data["prerequisites"])}
+            "courses": len(data["courses"]), "prerequisites": len(data["prerequisites"]),
+            "recursion_depth": dataset.recursion_depth(data, target)}
 
     for query_id in config.BENCHMARK_QUERIES:
         p = params[query_id]
 
+        # Beide Aufrufe liefern (Zeilen, Serverzeit). PostgreSQL hat keine Serverzeit.
         def sql_call():
-            return run_sql(conn, query_id, **p)
+            return run_sql(conn, query_id, **p), None
 
         def cypher_call():
-            return run_cypher(session, query_id, timeout=config.QUERY_TIMEOUT_S, **p)
+            return run_cypher_timed(session, query_id, timeout=config.QUERY_TIMEOUT_S, **p)
 
         # K1: Ohne gleiche Ergebnisse ist die Zeitmessung nicht vergleichbar.
         # Laeuft eine Abfrage in den Timeout, wird das festgehalten und nur
@@ -90,7 +94,7 @@ def measure(series, depth, width, conn, driver, session, writer, runs, warmup) -
         first = {}
         for name, call in list(calls.items()):
             try:
-                first[name] = call()
+                first[name] = call()[0]
             except Exception as error:
                 if not is_timeout(error):
                     raise
@@ -108,9 +112,10 @@ def measure(series, depth, width, conn, driver, session, writer, runs, warmup) -
             # Reihenfolge wechselt, damit keine Datenbank systematisch zuerst laeuft
             order = list(calls.items())
             for name, call in (order if run % 2 else order[::-1]):
-                ms, rows = timed(call)
+                ms, (rows, server_ms) = timed(call)
                 writer.writerow({**base, "result_rows": len(rows), "database": name,
-                                 "query": query_id, "run": run, "ms": f"{ms:.3f}", "status": "ok"})
+                                 "query": query_id, "run": run, "ms": f"{ms:.3f}",
+                                 "server_ms": "" if server_ms is None else server_ms, "status": "ok"})
         rows_info = ", ".join(f"{n} {len(r)} Zeilen" for n, r in first.items())
         k1 = "K1 erfuellt" if len(first) == 2 else "K1 nicht pruefbar"
         print(f"  {query_id}: {rows_info}, {k1}")
@@ -138,7 +143,7 @@ def summarize(path) -> None:
 # Hauptablauf
 #-----------------------------------------------------------------------------
 def main(quick: bool = False) -> None:
-    scenarios = list(dict.fromkeys(config.SCENARIOS_DEPTH + config.SCENARIOS_WIDTH))
+    scenarios = list(dict.fromkeys(config.SCENARIOS_DEPTH + config.SCENARIOS_WIDTH + config.SCENARIOS_CHAIN))
     runs, warmup = (config.MEASURED_RUNS, config.WARMUP_RUNS)
     out_path = config.BENCHMARK_CSV
     if quick:

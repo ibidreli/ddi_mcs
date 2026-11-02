@@ -5,7 +5,7 @@ Graphumsetzung derselben Problemstellung mit denselben Daten wie PostgreSQL.
 | Datei | Inhalt |
 |---|---|
 | `schema.cypher` | eindeutige `id` für alle 6 Knotentypen |
-| `import.cypher` | Import aus `data/seed.json`, ausgeführt durch `src/load.py` |
+| `import.cypher` | Import aus `data/seed.json`. Die Blöcke erwarten den Parameter `$rows` und werden deshalb über `src/load.py` ausgeführt, nicht direkt in `cypher-shell` |
 | `queries.cypher` | A-001 bis A-005 mit denselben Parametern wie die SQL-Funktionen |
 | `model/` | Property-Graph-Modell als `.dot`, `.png`, `.svg` |
 

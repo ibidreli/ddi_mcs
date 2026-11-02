@@ -36,9 +36,18 @@ def run_sql(conn, query_id: str, **params) -> list[tuple]:
 
 
 def run_cypher(session, query_id: str, timeout: float | None = None, **params) -> list[tuple]:
+    return run_cypher_timed(session, query_id, timeout, **params)[0]
+
+
+def run_cypher_timed(session, query_id: str, timeout: float | None = None,
+                     **params) -> tuple[list[tuple], int]:
+    """Wie run_cypher, dazu die Serverzeit in ms bis zum ersten Datensatz.
+    Mit ORDER BY ist das Ergebnis dann vollstaendig berechnet, die Zeit enthaelt
+    also die Ausfuehrung ohne Uebertragung zum Client."""
     from neo4j import Query
     result = session.run(Query(CYPHER[query_id], timeout=timeout), params)
-    return [tuple(record.values()) for record in result]
+    rows = [tuple(record.values()) for record in result]
+    return rows, result.consume().result_available_after
 
 
 #-----------------------------------------------------------------------------

@@ -152,3 +152,31 @@ split = pd.DataFrame({
 })
 split["faktor_traversierung"] = split["pg_traversierung"] / split["neo_traversierung"]
 split.reset_index().sort_values(["series", "depth", "courses"]).round(2)
+
+# %% [markdown]
+# ## **6) Abbildung für den Bericht**
+#
+# A-001 inklusive Übertragung und A-001-count über die Tiefe, als Kette (durchgezogen) und mit
+# Abkürzungen (gestrichelt).
+
+# %%
+#-----------------------------------------------------------------------------
+# Zwei Panels: Gesamtzeit und reine Traversierung
+#-----------------------------------------------------------------------------
+fig, axes = plt.subplots(1, 2, figsize=(11, 4.2), sharey=True)
+panels = (("A-001", "A-001 inklusive Übertragung"), ("A-001-count", "A-001-count nur Traversierung"))
+for ax, (query_id, title) in zip(axes, panels):
+    for series, style, label in (("chain", "-", "Kette"), ("depth", "--", "Abkürzung")):
+        part = summary[(summary["series"] == series) & (summary["query"] == query_id)]
+        for db, group in part.groupby("database"):
+            group = group.sort_values("depth")
+            ax.plot(group["depth"], group["median_ms"], style, marker="o", color=colors[db], label=f"{db} {label}")
+            ax.fill_between(group["depth"], group["q25_ms"], group["q75_ms"], alpha=0.15, color=colors[db])
+    ax.set_title(title)
+    ax.set_xlabel("Tiefe (Stufen)")
+    ax.grid(alpha=0.3)
+axes[0].set_ylabel("Median ms")
+axes[0].legend()
+fig.tight_layout()
+fig.savefig(config.RESULTS_DIR / "benchmark-bericht.png", dpi=200)
+plt.show()

@@ -52,5 +52,5 @@ EXTRA_EDGE_SHARE_CHAIN = 0.0  # Reihe chain: nur Kanten zur direkt darunterliege
 WARMUP_RUNS = 5             # Aufwaermlaeufe, nicht gewertet
 MEASURED_RUNS = 20          # gewertete Laeufe pro Abfrage und Datenbank
 QUERY_TIMEOUT_S = 120       # Abbruch einzelner Abfragen
-BENCHMARK_QUERIES = ("A-001", "A-003")
+BENCHMARK_QUERIES = ("A-001", "A-003", "A-001-count")  # A-001-count: nur Traversierung, eine Zeile
 IMPORT_BATCH = 5000         # Zeilen pro Neo4j-Importaufruf

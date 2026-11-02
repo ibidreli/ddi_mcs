@@ -16,7 +16,7 @@
 #
 # Wertet `comparison/results/benchmark.csv` aus, die `.\start.ps1 -Aktion Messen` erzeugt.
 # Gemessen werden A-001 und A-003 in PostgreSQL und Neo4j, jeweils inklusive Ergebnisübertragung.
-# Bei Neo4j liegt zusätzlich die Serverzeit ohne Übertragung vor (`server_ms`).
+# `A-001-count` führt dieselbe Traversierung wie A-001 aus, überträgt aber nur eine Zeile.
 # LE2, LE3.
 
 # %% [markdown]
@@ -57,14 +57,11 @@ summary = (
     ok.groupby(["series", "scenario", "depth", "width", "courses", "prerequisites", "recursion_depth",
                 "query", "database"])
     .agg(rows=("result_rows", "first"), median_ms=("ms", "median"),
-         q25_ms=("ms", lambda s: s.quantile(0.25)), q75_ms=("ms", lambda s: s.quantile(0.75)),
-         server_ms=("server_ms", "median"))
+         q25_ms=("ms", lambda s: s.quantile(0.25)), q75_ms=("ms", lambda s: s.quantile(0.75)))
     .reset_index()
 )
 wide = summary.pivot_table(index=["series", "depth", "width", "courses", "recursion_depth", "query", "rows"],
                            columns="database", values="median_ms").reset_index()
-server = summary[summary["database"] == "Neo4j"][["series", "depth", "courses", "query", "server_ms"]]
-wide = wide.merge(server.rename(columns={"server_ms": "Neo4j_server"}), on=["series", "depth", "courses", "query"])
 wide["faktor_pg_zu_neo4j"] = wide["PostgreSQL"] / wide["Neo4j"]
 wide.round(2)
 
@@ -72,11 +69,11 @@ wide.round(2)
 #-----------------------------------------------------------------------------
 # Tabelle fuer den Bericht (Markdown)
 #-----------------------------------------------------------------------------
-lines = ["| Reihe | Tiefe | Schritte | Kurse | Abfrage | Zeilen | PostgreSQL ms | Neo4j ms | Neo4j Server ms | Faktor |",
-         "|---|---:|---:|---:|---|---:|---:|---:|---:|---:|"]
+lines = ["| Reihe | Tiefe | Schritte | Kurse | Abfrage | Zeilen | PostgreSQL ms | Neo4j ms | Faktor |",
+         "|---|---:|---:|---:|---|---:|---:|---:|---:|"]
 for r in wide.sort_values(["series", "query", "depth", "courses"]).itertuples():
     lines.append(f"| {r.series} | {r.depth} | {r.recursion_depth} | {r.courses:,} | {r.query} | {int(r.rows):,} | "
-                 f"{r.PostgreSQL:.2f} | {r.Neo4j:.2f} | {r.Neo4j_server:.1f} | {r.faktor_pg_zu_neo4j:.2f} |"
+                 f"{r.PostgreSQL:.2f} | {r.Neo4j:.2f} | {r.faktor_pg_zu_neo4j:.2f} |"
                  .replace(",", "'"))
 table_md = "\n".join(lines)
 (config.RESULTS_DIR / "benchmark-summary.md").write_text(table_md + "\n", encoding="utf-8")
@@ -94,7 +91,7 @@ print(table_md)
 #-----------------------------------------------------------------------------
 colors = {"PostgreSQL": "#336791", "Neo4j": "#018bff"}
 titles = {"depth": "Tiefe mit Zusatzkanten", "chain": "Tiefe ohne Zusatzkanten", "width": "Kurse variiert"}
-fig, axes = plt.subplots(2, 3, figsize=(15, 7), sharey="row")
+fig, axes = plt.subplots(len(config.BENCHMARK_QUERIES), 3, figsize=(15, 10), sharey="row")
 for row, query_id in enumerate(config.BENCHMARK_QUERIES):
     for col, (series, x) in enumerate((("depth", "depth"), ("chain", "depth"), ("width", "courses"))):
         ax = axes[row, col]
@@ -135,17 +132,21 @@ fig.savefig(config.RESULTS_DIR / "benchmark-faktor.png", dpi=150)
 plt.show()
 
 # %% [markdown]
-# ## **5) Serverzeit gegenüber Übertragung**
+# ## **5) Traversierung gegenüber Übertragung**
 #
-# Die Serverzeit von Neo4j enthält die Ausführung ohne Übertragung zum Client. Die Differenz zur
-# Client-Zeit ist Übertragung und Treiber. So zeigt sich, ob der Abstand zu PostgreSQL aus der
-# Traversierung oder aus der Übertragung kommt.
+# A-001 und A-001-count traversieren denselben Teilgraphen. A-001-count überträgt nur die Anzahl.
+# Die Differenz der beiden Zeiten ist die Übertragung der Ergebniszeilen.
 
 # %%
 #-----------------------------------------------------------------------------
-# Anteil Serverzeit an der Client-Zeit von Neo4j
+# Zeit fuer Traversierung und Uebertragung pro Datenbank
 #-----------------------------------------------------------------------------
-share = wide[["series", "depth", "courses", "recursion_depth", "query", "rows", "PostgreSQL", "Neo4j", "Neo4j_server"]].copy()
-share["Neo4j_uebertragung"] = share["Neo4j"] - share["Neo4j_server"]
-share["anteil_server"] = share["Neo4j_server"] / share["Neo4j"]
-share.sort_values(["series", "query", "depth", "courses"]).round(2)
+full = wide[wide["query"] == "A-001"].set_index(["series", "depth", "courses", "recursion_depth"])
+count = wide[wide["query"] == "A-001-count"].set_index(["series", "depth", "courses", "recursion_depth"])
+split = pd.DataFrame({
+    "zeilen": full["rows"],
+    "pg_traversierung": count["PostgreSQL"], "pg_uebertragung": full["PostgreSQL"] - count["PostgreSQL"],
+    "neo_traversierung": count["Neo4j"], "neo_uebertragung": full["Neo4j"] - count["Neo4j"],
+})
+split["faktor_traversierung"] = split["pg_traversierung"] / split["neo_traversierung"]
+split.reset_index().sort_values(["series", "depth", "courses"]).round(2)

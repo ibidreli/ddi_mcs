@@ -13,6 +13,8 @@ from src.db import read_cypher_blocks
 SQL = {
     "A-001": """SELECT * FROM lernpfad.all_prerequisites(%(course)s)
                 ORDER BY course_id COLLATE "C" """,
+    # Nur fuer die Messung: gleiche Rekursion wie A-001, ohne Uebertragung der Zeilen
+    "A-001-count": """SELECT count(*) FROM lernpfad.all_prerequisites(%(course)s)""",
     "A-002": """SELECT * FROM lernpfad.eligible_courses(%(learner)s)
                 ORDER BY course_id COLLATE "C" """,
     "A-003": """SELECT * FROM lernpfad.missing_prerequisites(%(course)s, %(learner)s)
@@ -36,18 +38,9 @@ def run_sql(conn, query_id: str, **params) -> list[tuple]:
 
 
 def run_cypher(session, query_id: str, timeout: float | None = None, **params) -> list[tuple]:
-    return run_cypher_timed(session, query_id, timeout, **params)[0]
-
-
-def run_cypher_timed(session, query_id: str, timeout: float | None = None,
-                     **params) -> tuple[list[tuple], int]:
-    """Wie run_cypher, dazu die Serverzeit in ms bis zum ersten Datensatz.
-    Mit ORDER BY ist das Ergebnis dann vollstaendig berechnet, die Zeit enthaelt
-    also die Ausfuehrung ohne Uebertragung zum Client."""
     from neo4j import Query
     result = session.run(Query(CYPHER[query_id], timeout=timeout), params)
-    rows = [tuple(record.values()) for record in result]
-    return rows, result.consume().result_available_after
+    return [tuple(record.values()) for record in result]
 
 
 #-----------------------------------------------------------------------------

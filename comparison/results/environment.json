@@ -1,5 +1,5 @@
 {
-  "measured_at": "2026-10-22T14:54:35",
+  "measured_at": "2026-11-02T12:24:12",
   "postgresql": "18.6",
   "neo4j": "5.26.0 community",
   "python": "3.13.7",

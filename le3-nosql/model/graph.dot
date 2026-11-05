@@ -1,6 +1,8 @@
 // graph.dot
 // Property-Graph-Modell der Neo4j-Umsetzung: Knoten mit Label und Eigenschaften,
-// gerichtete Kanten mit Typ. id ist bei jedem Label eindeutig (schema.cypher).
+// gerichtete Kanten mit Typ. Deutsche Namen wie im konzeptionellen Modell,
+// darunter Label und Kantentyp wie in den Cypher-Skripten.
+// id ist bei jedem Label eindeutig (schema.cypher).
 // COMPLETED ist eine abgeleitete Abkuerzung vom Abschluss direkt zum Kurs.
 // Rendern: dot -Tpng graph.dot -o graph.png
 digraph graph_model {
@@ -8,20 +10,20 @@ digraph graph_model {
   node  [shape=ellipse, style=filled, fontname="Helvetica", fontsize=11, penwidth=1.2];
   edge  [fontname="Helvetica", fontsize=10, penwidth=1.2, color="#333333"];
 
-  learner  [label=<<B>:Learner</B><BR/><FONT POINT-SIZE="9">id, name, study_mode</FONT>>, fillcolor="#f6c85f"];
-  run      [label=<<B>:Run</B><BR/><FONT POINT-SIZE="9">id, study_mode</FONT>>, fillcolor="#8cc63f"];
-  course   [label=<<B>:Course</B><BR/><FONT POINT-SIZE="9">id, title, hours</FONT>>, fillcolor="#2ec4d0"];
-  semester [label=<<B>:Semester</B><BR/><FONT POINT-SIZE="9">id, name, starts_on, ends_on</FONT>>, fillcolor="#d9d9d9"];
-  location [label=<<B>:Location</B><BR/><FONT POINT-SIZE="9">id, name</FONT>>, fillcolor="#d9d9d9"];
-  lecturer [label=<<B>:Lecturer</B><BR/><FONT POINT-SIZE="9">id, name</FONT>>, fillcolor="#d9d9d9"];
+  learner  [label=<<B>Studi</B><BR/><FONT POINT-SIZE="9">:Learner</FONT><BR/><FONT POINT-SIZE="9">id, name, study_mode</FONT>>, fillcolor="#f6c85f"];
+  run      [label=<<B>Durchführung</B><BR/><FONT POINT-SIZE="9">:Run</FONT><BR/><FONT POINT-SIZE="9">id, study_mode</FONT>>, fillcolor="#8cc63f"];
+  course   [label=<<B>Kurs</B><BR/><FONT POINT-SIZE="9">:Course</FONT><BR/><FONT POINT-SIZE="9">id, title, hours</FONT>>, fillcolor="#2ec4d0"];
+  semester [label=<<B>Semester</B><BR/><FONT POINT-SIZE="9">:Semester</FONT><BR/><FONT POINT-SIZE="9">id, name, starts_on, ends_on</FONT>>, fillcolor="#d9d9d9"];
+  location [label=<<B>Standort</B><BR/><FONT POINT-SIZE="9">:Location</FONT><BR/><FONT POINT-SIZE="9">id, name</FONT>>, fillcolor="#d9d9d9"];
+  lecturer [label=<<B>Lehrperson</B><BR/><FONT POINT-SIZE="9">:Lecturer</FONT><BR/><FONT POINT-SIZE="9">id, name</FONT>>, fillcolor="#d9d9d9"];
 
-  learner -> run      [label="ATTENDED\n{completed_on}"];
-  learner -> course   [label="COMPLETED\n{completed_on}", style=dashed];
-  run -> course       [label="OF"];
-  run -> semester     [label="IN"];
-  run -> location     [label="AT"];
-  lecturer -> run     [label="TEACHES"];
-  course -> course    [label="REQUIRES\n(Zielkurs -> Vorkurs)"];
+  learner -> run      [label="schliesst ab\nATTENDED {completed_on}"];
+  learner -> course   [label="hat abgeschlossen (abgeleitet)\nCOMPLETED {completed_on}", style=dashed];
+  run -> course       [label="gehört zu\nOF"];
+  run -> semester     [label="findet statt in\nIN"];
+  run -> location     [label="findet statt an\nAT"];
+  lecturer -> run     [label="unterrichtet\nTEACHES"];
+  course -> course    [label="setzt voraus (Zielkurs -> Vorkurs)\nREQUIRES"];
 
   {rank=same; learner; lecturer;}
   {rank=same; course; semester; location;}

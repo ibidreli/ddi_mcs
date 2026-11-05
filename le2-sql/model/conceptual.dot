@@ -16,7 +16,7 @@ graph conceptual {
   semester [label="Semester",        pos="230,250!"];
   standort [label="Standort",        pos="890,250!"];
   lehr     [label="Lehrperson",      pos="560,40!"];
-  person   [label="Lernende Person", pos="140,470!"];
+  person   [label="Studi", pos="140,470!"];
 
   // Assoziative Entitaet "schliesst ab" (Raute im Rechteck)
   belegt_box [shape=box, label="", fillcolor="white", width=2.05, height=0.8, pos="300,380!"];

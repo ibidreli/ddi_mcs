@@ -6,7 +6,8 @@ Ablauf pro Szenario
 1. Datensatz erzeugen (fester Seed) und in beide Datenbanken laden
 2. K1: Ergebnisse beider Datenbanken vergleichen, bei Abweichung Abbruch
 3. Aufwaermlaeufe, danach gewertete Laeufe abwechselnd je Datenbank
-4. Zeit inklusive Ergebnisuebertragung zum Client messen
+4. Zeit inklusive Ergebnisuebertragung zum Client messen. A-001-count fuehrt
+   dieselbe Traversierung wie A-001 aus und uebertraegt nur eine Zeile
 Am Ende wird der Beispielbestand wieder in Neo4j geladen.
 """
 import csv
@@ -22,8 +23,8 @@ from src.db import neo4j_driver, pg_connect
 from src.load import load_neo4j, load_postgres
 from src.queries import run_cypher, run_sql
 
-FIELDS = ["series", "scenario", "depth", "width", "courses", "prerequisites", "result_rows",
-          "database", "query", "run", "ms", "status"]
+FIELDS = ["series", "scenario", "depth", "width", "courses", "prerequisites", "recursion_depth",
+          "result_rows", "database", "query", "run", "ms", "status"]
 
 
 def is_timeout(error: Exception) -> bool:
@@ -64,15 +65,18 @@ def environment(conn, session) -> dict:
 # Messung eines Szenarios
 #-----------------------------------------------------------------------------
 def measure(series, depth, width, conn, driver, session, writer, runs, warmup) -> None:
-    data = dataset.generate(depth, width)
+    share = config.EXTRA_EDGE_SHARE_CHAIN if series == "chain" else config.EXTRA_EDGE_SHARE
+    data = dataset.generate(depth, width, extra_edge_share=share)
     load_postgres(data)
     load_neo4j(data, driver=driver)
 
     target = dataset.target_course(depth)
-    params = {"A-001": {"course": target}, "A-003": {"course": target, "learner": 1}}
+    params = {"A-001": {"course": target}, "A-003": {"course": target, "learner": 1},
+              "A-001-count": {"course": target}}
     scenario = f"{series}-d{depth}-w{width}"
     base = {"series": series, "scenario": scenario, "depth": depth, "width": width,
-            "courses": len(data["courses"]), "prerequisites": len(data["prerequisites"])}
+            "courses": len(data["courses"]), "prerequisites": len(data["prerequisites"]),
+            "recursion_depth": dataset.recursion_depth(data, target)}
 
     for query_id in config.BENCHMARK_QUERIES:
         p = params[query_id]
@@ -138,7 +142,7 @@ def summarize(path) -> None:
 # Hauptablauf
 #-----------------------------------------------------------------------------
 def main(quick: bool = False) -> None:
-    scenarios = list(dict.fromkeys(config.SCENARIOS_DEPTH + config.SCENARIOS_WIDTH))
+    scenarios = list(dict.fromkeys(config.SCENARIOS_DEPTH + config.SCENARIOS_WIDTH + config.SCENARIOS_CHAIN))
     runs, warmup = (config.MEASURED_RUNS, config.WARMUP_RUNS)
     out_path = config.BENCHMARK_CSV
     if quick:

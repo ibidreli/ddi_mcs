@@ -43,6 +43,11 @@ def test_a001(dbs, course):
     same(dbs, "A-001", course=course)
 
 
+@pytest.mark.parametrize("course", COURSES)
+def test_a001_count(dbs, course):
+    same(dbs, "A-001-count", course=course)
+
+
 @pytest.mark.parametrize("learner", LEARNERS)
 def test_a002(dbs, learner):
     same(dbs, "A-002", learner=learner)

@@ -1,10 +1,12 @@
 # ---
 # jupyter:
 #   jupytext:
-#     formats: ipynb,pct.py:percent
+#     formats: ipynb,.pct.py:percent
 #     text_representation:
 #       extension: .py
 #       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.19.6
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
@@ -16,6 +18,7 @@
 #
 # Wertet `comparison/results/benchmark.csv` aus, die `.\start.ps1 -Aktion Messen` erzeugt.
 # Gemessen werden A-001 und A-003 in PostgreSQL und Neo4j, jeweils inklusive Ergebnisübertragung.
+# `A-001-count` führt dieselbe Traversierung wie A-001 aus, überträgt aber nur eine Zeile.
 # LE2, LE3.
 
 # %% [markdown]
@@ -53,12 +56,13 @@ print("Timeouts:", (raw["status"] == "timeout").sum())
 #-----------------------------------------------------------------------------
 ok = raw[raw["status"] == "ok"]
 summary = (
-    ok.groupby(["series", "scenario", "depth", "width", "courses", "prerequisites", "query", "database"])
+    ok.groupby(["series", "scenario", "depth", "width", "courses", "prerequisites", "recursion_depth",
+                "query", "database"])
     .agg(rows=("result_rows", "first"), median_ms=("ms", "median"),
          q25_ms=("ms", lambda s: s.quantile(0.25)), q75_ms=("ms", lambda s: s.quantile(0.75)))
     .reset_index()
 )
-wide = summary.pivot_table(index=["series", "depth", "width", "courses", "query", "rows"],
+wide = summary.pivot_table(index=["series", "depth", "width", "courses", "recursion_depth", "query", "rows"],
                            columns="database", values="median_ms").reset_index()
 wide["faktor_pg_zu_neo4j"] = wide["PostgreSQL"] / wide["Neo4j"]
 wide.round(2)
@@ -67,11 +71,12 @@ wide.round(2)
 #-----------------------------------------------------------------------------
 # Tabelle fuer den Bericht (Markdown)
 #-----------------------------------------------------------------------------
-lines = ["| Reihe | Tiefe | Kurse | Abfrage | Zeilen | PostgreSQL ms | Neo4j ms | Faktor |",
-         "|---|---:|---:|---|---:|---:|---:|---:|"]
+lines = ["| Reihe | Tiefe | Schritte | Kurse | Abfrage | Zeilen | PostgreSQL ms | Neo4j ms | Faktor |",
+         "|---|---:|---:|---:|---|---:|---:|---:|---:|"]
 for r in wide.sort_values(["series", "query", "depth", "courses"]).itertuples():
-    lines.append(f"| {r.series} | {r.depth} | {r.courses:,} | {r.query} | {int(r.rows):,} | "
-                 f"{r.PostgreSQL:.2f} | {r.Neo4j:.2f} | {r.faktor_pg_zu_neo4j:.2f} |".replace(",", "'"))
+    lines.append(f"| {r.series} | {r.depth} | {r.recursion_depth} | {r.courses:,} | {r.query} | {int(r.rows):,} | "
+                 f"{r.PostgreSQL:.2f} | {r.Neo4j:.2f} | {r.faktor_pg_zu_neo4j:.2f} |"
+                 .replace(",", "'"))
 table_md = "\n".join(lines)
 (config.RESULTS_DIR / "benchmark-summary.md").write_text(table_md + "\n", encoding="utf-8")
 print(table_md)
@@ -79,24 +84,26 @@ print(table_md)
 # %% [markdown]
 # ## **3) K3 Skalierung**
 #
-# Links wächst die Tiefe bei 20 Kursen pro Stufe, rechts die Anzahl Kurse pro Stufe bei Tiefe 10.
+# Links wächst die Tiefe mit Zusatzkanten, in der Mitte ohne Zusatzkanten (Tiefe gleich Rekursionsschritte),
+# rechts die Anzahl Kurse pro Stufe bei Tiefe 10.
 
 # %%
 #-----------------------------------------------------------------------------
 # Median mit Quartilen ueber Tiefe und Kurszahl
 #-----------------------------------------------------------------------------
 colors = {"PostgreSQL": "#336791", "Neo4j": "#018bff"}
-fig, axes = plt.subplots(2, 2, figsize=(11, 7), sharey="row")
+titles = {"depth": "Tiefe mit Zusatzkanten", "chain": "Tiefe ohne Zusatzkanten", "width": "Kurse variiert"}
+fig, axes = plt.subplots(len(config.BENCHMARK_QUERIES), 3, figsize=(15, 10), sharey="row")
 for row, query_id in enumerate(config.BENCHMARK_QUERIES):
-    for col, (series, x) in enumerate((("depth", "depth"), ("width", "courses"))):
+    for col, (series, x) in enumerate((("depth", "depth"), ("chain", "depth"), ("width", "courses"))):
         ax = axes[row, col]
         part = summary[(summary["series"] == series) & (summary["query"] == query_id)]
         for db, group in part.groupby("database"):
             group = group.sort_values(x)
             ax.plot(group[x], group["median_ms"], marker="o", label=db, color=colors[db])
             ax.fill_between(group[x], group["q25_ms"], group["q75_ms"], alpha=0.2, color=colors[db])
-        ax.set_title(f"{query_id}, {'Tiefe' if series == 'depth' else 'Kurse'} variiert")
-        ax.set_xlabel("Tiefe (Stufen)" if series == "depth" else "Anzahl Kurse")
+        ax.set_title(f"{query_id}, {titles[series]}")
+        ax.set_xlabel("Anzahl Kurse" if series == "width" else "Tiefe (Stufen)")
         ax.set_ylabel("Median ms")
         ax.grid(alpha=0.3)
         ax.legend()
@@ -114,8 +121,9 @@ plt.show()
 # Faktor PostgreSQL zu Neo4j ueber die Tiefe
 #-----------------------------------------------------------------------------
 fig, ax = plt.subplots(figsize=(6, 4))
-for query_id, group in wide[wide["series"] == "depth"].groupby("query"):
-    ax.plot(group["depth"], group["faktor_pg_zu_neo4j"], marker="o", label=query_id)
+for (series, query_id), group in wide[wide["series"].isin(["depth", "chain"])].groupby(["series", "query"]):
+    style = "-" if series == "depth" else "--"
+    ax.plot(group["depth"], group["faktor_pg_zu_neo4j"], style, marker="o", label=f"{query_id} {series}")
 ax.axhline(1, color="grey", linestyle="--")
 ax.set_xlabel("Tiefe (Stufen)")
 ax.set_ylabel("Median PostgreSQL / Median Neo4j")
@@ -123,4 +131,52 @@ ax.legend()
 ax.grid(alpha=0.3)
 fig.tight_layout()
 fig.savefig(config.RESULTS_DIR / "benchmark-faktor.png", dpi=150)
+plt.show()
+
+# %% [markdown]
+# ## **5) Traversierung gegenüber Übertragung**
+#
+# A-001 und A-001-count traversieren denselben Teilgraphen. A-001-count überträgt nur die Anzahl.
+# Die Differenz der beiden Zeiten ist die Übertragung der Ergebniszeilen.
+
+# %%
+#-----------------------------------------------------------------------------
+# Zeit fuer Traversierung und Uebertragung pro Datenbank
+#-----------------------------------------------------------------------------
+full = wide[wide["query"] == "A-001"].set_index(["series", "depth", "courses", "recursion_depth"])
+count = wide[wide["query"] == "A-001-count"].set_index(["series", "depth", "courses", "recursion_depth"])
+split = pd.DataFrame({
+    "zeilen": full["rows"],
+    "pg_traversierung": count["PostgreSQL"], "pg_uebertragung": full["PostgreSQL"] - count["PostgreSQL"],
+    "neo_traversierung": count["Neo4j"], "neo_uebertragung": full["Neo4j"] - count["Neo4j"],
+})
+split["faktor_traversierung"] = split["pg_traversierung"] / split["neo_traversierung"]
+split.reset_index().sort_values(["series", "depth", "courses"]).round(2)
+
+# %% [markdown]
+# ## **6) Abbildung für den Bericht**
+#
+# A-001 inklusive Übertragung und A-001-count über die Tiefe, als Kette (durchgezogen) und mit
+# Abkürzungen (gestrichelt).
+
+# %%
+#-----------------------------------------------------------------------------
+# Zwei Panels: Gesamtzeit und reine Traversierung
+#-----------------------------------------------------------------------------
+fig, axes = plt.subplots(1, 2, figsize=(11, 4.2), sharey=True)
+panels = (("A-001", "A-001 inklusive Übertragung"), ("A-001-count", "A-001-count nur Traversierung"))
+for ax, (query_id, title) in zip(axes, panels):
+    for series, style, label in (("chain", "-", "Kette"), ("depth", "--", "Abkürzung")):
+        part = summary[(summary["series"] == series) & (summary["query"] == query_id)]
+        for db, group in part.groupby("database"):
+            group = group.sort_values("depth")
+            ax.plot(group["depth"], group["median_ms"], style, marker="o", color=colors[db], label=f"{db} {label}")
+            ax.fill_between(group["depth"], group["q25_ms"], group["q75_ms"], alpha=0.15, color=colors[db])
+    ax.set_title(title)
+    ax.set_xlabel("Tiefe (Stufen)")
+    ax.grid(alpha=0.3)
+axes[0].set_ylabel("Median ms")
+axes[0].legend()
+fig.tight_layout()
+fig.savefig(config.RESULTS_DIR / "benchmark-bericht.png", dpi=200)
 plt.show()

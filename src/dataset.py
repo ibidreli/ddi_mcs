@@ -34,8 +34,11 @@ def course_id(layer: int, index: int) -> str:
 # Kurse liegen in Stufen. Jeder Kurs ab Stufe 1 benoetigt zwei Kurse der
 # Stufe darunter und teilweise einen Kurs aus einer noch tieferen Stufe.
 # Dadurch entstehen lange Ketten mit mehreren Wegen zum selben Vorkurs.
+# Die Zusatzkanten kuerzen die Rekursion ab. Mit extra_edge_share = 0 braucht
+# A-001 genau depth - 1 Rekursionsschritte (Reihe chain).
 #-----------------------------------------------------------------------------
-def generate(depth: int, width: int, seed: int = config.RANDOM_STATE) -> dict:
+def generate(depth: int, width: int, seed: int = config.RANDOM_STATE,
+             extra_edge_share: float = config.EXTRA_EDGE_SHARE) -> dict:
     rng = random.Random(seed * 1_000_003 + depth * 1_009 + width)
     semesters = [
         {"semester_id": "HS25", "name": "Herbstsemester 2025", "starts_on": "2025-09-15", "ends_on": "2026-01-31"},
@@ -53,7 +56,8 @@ def generate(depth: int, width: int, seed: int = config.RANDOM_STATE) -> dict:
                 continue
             required = set(rng.sample(range(width), k=min(2, width)))
             edges = {course_id(layer - 1, j) for j in required}
-            if layer >= 2 and rng.random() < config.EXTRA_EDGE_SHARE:
+            # rng.random() wird immer gezogen, damit die Reihen depth und width unveraendert bleiben
+            if layer >= 2 and rng.random() < extra_edge_share:
                 edges.add(course_id(rng.randrange(layer - 1), rng.randrange(width)))
             prerequisites += [{"course_id": cid, "required_course_id": e} for e in sorted(edges)]
 
@@ -82,7 +86,7 @@ def generate(depth: int, width: int, seed: int = config.RANDOM_STATE) -> dict:
                                 "run_id": run_of[cid], "completed_on": "2026-01-20"})
 
     return {
-        "dataset_version": f"benchmark-d{depth}-w{width}",
+        "dataset_version": f"benchmark-d{depth}-w{width}-e{extra_edge_share}",
         "semesters": semesters, "locations": locations, "lecturers": lecturers,
         "courses": courses, "learners": learners, "prerequisites": prerequisites,
         "course_runs": course_runs, "completions": completions,
@@ -92,3 +96,20 @@ def generate(depth: int, width: int, seed: int = config.RANDOM_STATE) -> dict:
 def target_course(depth: int) -> str:
     """Zielkurs der Messung: erster Kurs der obersten Stufe."""
     return course_id(depth - 1, 0)
+
+
+def recursion_depth(data: dict, target: str) -> int:
+    """Anzahl Rekursionsschritte von A-001: groesster kuerzester Abstand vom Zielkurs."""
+    required: dict[str, list[str]] = {}
+    for p in data["prerequisites"]:
+        required.setdefault(p["course_id"], []).append(p["required_course_id"])
+    distance, frontier = {target: 0}, [target]
+    while frontier:
+        nxt = []
+        for course in frontier:
+            for pre in required.get(course, []):
+                if pre not in distance:
+                    distance[pre] = distance[course] + 1
+                    nxt.append(pre)
+        frontier = nxt
+    return max(distance.values())

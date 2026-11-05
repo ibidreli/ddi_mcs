@@ -15,6 +15,16 @@ RETURN p.id AS course_id, p.title AS title, p.hours AS hours
 ORDER BY course_id;
 
 // -----------------------------------------------------------------------------
+// A-001-count: gleiche Traversierung wie A-001, liefert nur die Anzahl
+// Nur fuer die Messung: trennt die Traversierung von der Uebertragung der Zeilen.
+// -----------------------------------------------------------------------------
+// name: A-001-count
+MATCH (:Course {id: $course})-[:REQUIRES*1..]->(p:Course)
+WITH DISTINCT p
+WHERE p.id <> $course
+RETURN count(p) AS courses;
+
+// -----------------------------------------------------------------------------
 // A-002: Kurse, die eine Person als Naechstes belegen darf
 // Noch nicht abgeschlossen und kein Vorkurs ohne Abschluss
 // -----------------------------------------------------------------------------

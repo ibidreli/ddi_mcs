@@ -13,6 +13,8 @@ from src.db import read_cypher_blocks
 SQL = {
     "A-001": """SELECT * FROM lernpfad.all_prerequisites(%(course)s)
                 ORDER BY course_id COLLATE "C" """,
+    # Nur fuer die Messung: gleiche Rekursion wie A-001, ohne Uebertragung der Zeilen
+    "A-001-count": """SELECT count(*) FROM lernpfad.all_prerequisites(%(course)s)""",
     "A-002": """SELECT * FROM lernpfad.eligible_courses(%(learner)s)
                 ORDER BY course_id COLLATE "C" """,
     "A-003": """SELECT * FROM lernpfad.missing_prerequisites(%(course)s, %(learner)s)
